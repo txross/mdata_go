@@ -48,8 +48,10 @@ Products are stored in state at an address prefixed by the first 6 hex character
 
 The next 64 characters will be first 64 charactures of the hex-ecoded representation of a hashed GTIN. The full address then becomes:
 
-hashed namespace first 6 characters + hashed gtin first 64 characters
-`fa3781` + `c638b29a67d8b4b3784fb84edadc71367b176a28b29e819f508431d28559a4bc`
+Prefix|+|Hashed GTIN
+---|---|---
+hashed namespace first 6 characters | + | hashed gtin first 64 characters 
+`fa3781` | + | `c638b29a67d8b4b3784fb84edadc71367b176a28b29e819f508431d28559a4bc`
 
 ## Transaction Payload and Execution
 
