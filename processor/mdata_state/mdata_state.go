@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -40,10 +41,38 @@ by the transaction family which defines the namespace
 */
 var Namespace = hexdigest("mdata")[:6]
 
+type Attributes map[string]interface{}
+
+func (self Attributes) serialize() []byte {
+	var b bytes.Buffer
+	var i int = 0
+	for k, v := range a {
+		b.WriteString(fmt.Sprintf("%v=%v", k, v))
+		i += 1
+		if i < len(a) {
+			b.WriteString(",")
+		}
+	}
+	return b.Bytes()
+}
+
+func deserializeAttributes(a []string) Attributes {
+	A := Attributes{}
+	for _, str := range a {
+		if str != "" {
+			parts := strings.Split(str, "=")
+			k, v := parts[0], parts[1]
+			A[k] = v
+		}
+	}
+
+	return A
+}
+
 type Product struct {
-	Gtin  string
-	Mtrl  string
-	State string
+	Gtin       string
+	Attributes Attributes
+	State      string
 }
 
 // MdState handles addressing, serialization, deserialization,
@@ -157,15 +186,17 @@ func deserialize(data []byte) (map[string]*Product, error) {
 	products := make(map[string]*Product)
 	for _, str := range strings.Split(string(data), "|") {
 		parts := strings.Split(string(str), ",")
-		if len(parts) < 3 { //Product must include 3 attributes
+		if len(parts) < 3 { //Product must have three serialized attributes (even if Product.Attributes is empty)
 			return nil, &processor.InternalError{
 				Msg: fmt.Sprintf("Malformed product data: '%v'", string(data))}
 		}
 
+		attrs := parts[1 : len(parts)-1]
+
 		product := &Product{
-			Gtin:  parts[0],
-			Mtrl:  parts[1],
-			State: parts[2],
+			Gtin:       parts[0],
+			Attributes: deserializeAttributes(attrs),
+			State:      parts[len(parts)-1],
 		}
 		products[parts[0]] = product
 	}
@@ -177,7 +208,7 @@ func serialize(products []*Product) []byte {
 	for i, product := range products {
 		buffer.WriteString(product.Gtin)
 		buffer.WriteString(",")
-		buffer.WriteString(product.Mtrl)
+		buffer.WriteString(string(product.Attributes.serialize()))
 		buffer.WriteString(",")
 		buffer.WriteString(product.State)
 		if i+1 != len(products) {

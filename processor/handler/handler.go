@@ -91,7 +91,7 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 	mdState := mdata_state.NewMdState(context)
 
 	logger.Debugf("mdata txn %v: signer %v: payload: Action='%v', Gtin='%v', Material='%v'",
-		request.GetSignature(), signer, payload.Gtin, payload.Mtrl)
+		request.GetSignature(), signer, payload.Gtin, payload.Attributes)
 
 	switch payload.Action {
 	case "create":
@@ -100,9 +100,9 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 			return err
 		}
 		product := &mdata_state.Product{
-			Gtin:  payload.Gtin,
-			Mtrl:  payload.Mtrl,
-			State: "ACTIVE",
+			Gtin:       payload.Gtin,
+			Attributes: mdata_state.deserializeAttributes(payload.Attributes),
+			State:      "ACTIVE",
 		}
 		displayCreate(payload, signer)
 		return mdState.SetProduct(payload.Gtin, product)
@@ -118,7 +118,7 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 			return err
 		}
 		product, _ := mdState.GetProduct(payload.Gtin) //err is not needed here, as it is checked in the validateUpdate function
-		product.Mtrl = payload.Mtrl
+		product.Attributes = mdata_state.deserializeAttributes(payload.Attributes)
 		product.State = "ACTIVE"
 		displayUpdate(payload, signer, product)
 		return mdState.SetProduct(payload.Gtin, product)
@@ -170,7 +170,7 @@ func validateUpdate(mdState *mdata_state.MdState, gtin string) error {
 }
 
 func displayUpdate(payload *mdata_payload.MdPayload, signer string, product *mdata_state.Product) {
-	s := fmt.Sprintf("+ Signer %s updated product %s to material %s+", signer[:6], product.Gtin, payload.Mtrl)
+	s := fmt.Sprintf("+ Signer %s updated product %s with attributes %s", signer[:6], product.Gtin, product.Attributes)
 	sLength := len(s)
 	border := "+" + strings.Repeat("-", sLength-2) + "+"
 	fmt.Println(border)

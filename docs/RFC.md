@@ -60,7 +60,7 @@ This processor relies on the standard Trasnaction and Batch processing defined [
 ### ProductCreate
 * Inputs:
     - GTIN-14
-    - Attributes in the form of key=value pairs
+    - Optional: Attributes in the form of key=value pairs
 * Outputs
     - State address of stored product
 
@@ -101,7 +101,6 @@ Invalid Transactions occur in the event of:
 
 Invalid Transactions occur in the event of:
  - Invalid GTIN (not one of GTIN-14 spec)
- - GTIN does not exist
  - GTIN not in INACTIVE state
 
  # Future Considerations
