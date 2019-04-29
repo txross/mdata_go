@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/hyperledger/sawtooth-sdk-go/processor"
 	"reflect"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 type MdPayload struct {
@@ -28,7 +28,7 @@ func (p MdPayload) invaildChar() (bool, string) {
 			}
 		}
 		if v.Kind() == reflect.Slice {
-			for _, value := range attrField.Interface().([]string)  {
+			for _, value := range attrField.Interface().([]string) {
 				if strings.Contains(value, "|") {
 					fmt.Println("Invalid char found!")
 				}
@@ -42,7 +42,7 @@ func (p MdPayload) invaildChar() (bool, string) {
 func (p *MdPayload) invalidAttributes() bool {
 	//Verify that if length of attributes > 0, they are key=value pairs in the slice of string
 	if len(p.Attributes) > 0 {
-		for _, pair := p.Attributes {
+		for _, pair := range p.Attributes {
 			if strings.Count(pair, "=") != 1 {
 				return true
 			}
@@ -58,11 +58,11 @@ func (p *MdPayload) invalidGtin() bool {
 		// Error converting string to int; invalid
 		return true
 	}
-	else {
-		if len(p.Gtin) != 14 {
-			return true
-		}
+
+	if len(p.Gtin) != 14 {
+		return true
 	}
+
 	return false
 }
 
@@ -82,13 +82,13 @@ func FromBytes(payloadData []byte) (*MdPayload, error) {
 	payload := MdPayload{}
 	payload.Action = parts[0]
 	payload.Gtin = parts[1]
-	payload.Attributes := parts[2:len(parts)]
+	payload.Attributes = parts[2:len(parts)]
 
 	if len(payload.Action) < 1 {
 		return nil, &processor.InvalidTransactionError{Msg: "Action is required"}
 	}
 
-	if len(payload.Gtin) != 14 {
+	if payload.invalidGtin() {
 		return nil, &processor.InvalidTransactionError{Msg: "Gtin-14 is required"}
 	}
 
@@ -100,7 +100,7 @@ func FromBytes(payloadData []byte) (*MdPayload, error) {
 	if payload.Action == "update" {
 		if len(payload.Attributes) < 1 {
 			return nil, &processor.InvalidTransactionError{Msg: "Attributes are required for update"}
-		}		
+		}
 	}
 
 	isInvalid, invalidString := payload.invaildChar()
