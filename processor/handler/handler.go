@@ -90,8 +90,8 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 	// may not share the same messaging.Connection object.
 	mdState := mdata_state.NewMdState(context)
 
-	logger.Debugf("mdata txn %v: signer %v: payload: Action='%v', Gtin='%v', Material='%v'",
-		request.GetSignature(), signer, payload.Gtin, payload.Attributes)
+	logger.Debugf("mdata txn %v: signer %v: payload: Action='%v', Gtin='%v', Attributes='%v'",
+		request.GetSignature(), signer, payload.Action, payload.Gtin, payload.Attributes)
 
 	switch payload.Action {
 	case "create":
@@ -123,13 +123,22 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 		displayUpdate(payload, signer, product)
 		return mdState.SetProduct(payload.Gtin, product)
 	case "deactivate":
-		err := validateDeactivate(mdState, payload.Gtin)
+		err := validateStateChange(mdState, payload.Gtin, payload.Action)
 		if err != nil {
 			return err
 		}
 		product, _ := mdState.GetProduct(payload.Gtin) //err is not needed here, as it is checked in the validateDeactivate function
 		product.State = "INACTIVE"
-		displayDeactivate(payload, signer, product)
+		displayStateChange(payload, signer, product)
+		return mdState.SetProduct(payload.Gtin, product)
+	case "activate":
+		err := validateStateChange(mdState, payload.Gtin, payload.Action)
+		if err != nil {
+			return err
+		}
+		product, _ := mdState.GetProduct(payload.Gtin) //err is not needed here, as it is checked in the validateDeactivate function
+		product.State = "ACTIVE"
+		displayStateChange(payload, signer, product)
 		return mdState.SetProduct(payload.Gtin, product)
 	default:
 		return &processor.InvalidTransactionError{
@@ -178,18 +187,32 @@ func displayUpdate(payload *mdata_payload.MdPayload, signer string, product *mda
 	fmt.Println(border)
 }
 
-func validateDeactivate(mdState *mdata_state.MdState, gtin string) error {
+func validateStateChange(mdState *mdata_state.MdState, gtin string, action string) error {
 	product, err := mdState.GetProduct(gtin)
 	if err != nil {
 		return err
 	}
 	if product == nil {
-		return &processor.InvalidTransactionError{Msg: "Deactivate requires an existing product"}
+		return &processor.InvalidTransactionError{Msg: "Activate/Deactivate requires an existing product"}
 	}
-	return nil
+
+	switch action {
+	case "deactivate":
+		if product.State == "INACTIVE" {
+			return &processor.InvalidTransactionError{
+				Msg: fmt.Sprintf("Product already in state: %v", product.State)}
+		}
+	case "activate":
+		if product.State == "ACTIVE" {
+			return &processor.InvalidTransactionError{
+				Msg: fmt.Sprintf("Product already in state: %v", product.State)}
+		}
+	default:
+		return nil
+	}
 }
 
-func displayDeactivate(payload *mdata_payload.MdPayload, signer string, product *mdata_state.Product) {
+func displayStateChange(payload *mdata_payload.MdPayload, signer string, product *mdata_state.Product) {
 	s := fmt.Sprintf("+ Signer %s updated product %s state to %s+", signer[:6], product.Gtin, product.State)
 	sLength := len(s)
 	border := "+" + strings.Repeat("-", sLength-2) + "+"

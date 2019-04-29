@@ -6,31 +6,37 @@ import (
 	"testing"
 )
 
+var sampleError = processor.InvalidTransactionError{Msg: "Sample Error"}
+
 var testPayloads = []struct {
 	in         []byte
 	outPayload *MdPayload
 	outError   error
 }{
-	{nil, nil, &processor.InvalidTransactionError{Msg: "Must contain payload"}},
-	{[]byte("create"), nil, &processor.InvalidTransactionError{Msg: "Payload is malformed"}}, //len<2
-	{[]byte(",00012345600012,000000001400245446"), nil, &processor.InvalidTransactionError{Msg: "Action is required"}},
-	{[]byte("update,,000000001400245446"), nil, &processor.InvalidTransactionError{Msg: "Gtin is required"}},
-	{[]byte("create,00012345600012,000000001400245446"), &MdPayload{Action: "create", Gtin: "00012345600012", Mtrl: "000000001400245446"}, nil},
-	{[]byte("create,00012345600012"), nil, &processor.InvalidTransactionError{Msg: "Mtrl is required for create and update"}},
-	{[]byte("update,00012345600012,000000001400245446"), &MdPayload{Action: "update", Gtin: "00012345600012", Mtrl: "000000001400245446"}, nil},
-	{[]byte("update,00012345600012"), nil, &processor.InvalidTransactionError{Msg: "Mtrl is required for create and update"}},
-	{[]byte("update,000123|45600012,000000001400245446"), nil, &processor.InvalidTransactionError{Msg: "Invalid Name (char '|' not allowed): '000123|45600012'"}},
-	{[]byte("update,00012345600012,00000000|1400245446"), nil, &processor.InvalidTransactionError{Msg: "Invalid Name (char '|' not allowed): '00000000|1400245446'"}},
+	/* Test Cases
+	1. Null payload => Err
+	2. Missing GTIN => Err
+	3. Missing action => Err
+	4. Invalid Attributes (not in key=value pairs) => Err
+	5. Valid Attributes => Ok
+	6. Update with Attributes => Ok
+	7. Update with len(Attributes) < 1  => Err
+	8. Invalid character '|'
+	*/
+	//Input, expected return MdPayload, expected return Error
+	{nil, nil, &sampleError},                                 //Null payload => Err
+	{[]byte("create"), nil, &sampleError},                    //Missing GTIN => Err
+	{[]byte("update,uom=cases"), nil, &sampleError},          //Missing GTIN => Err
+	{[]byte(",00012345600012,uom=cases"), nil, &sampleError}, //Missing action => Err
+	{[]byte("create,00012345600012,uom=cases"), &MdPayload{Action: "create", Gtin: "00012345600012", Attributes: []string{"uom=lbs"}}, nil},                        //Valid Attributes => Ok
+	{[]byte("update,00012345600012,uom=lbs,weight=300"), &MdPayload{Action: "update", Gtin: "00012345600012", Attributes: []string{"uom=lbs", "weight=300"}}, nil}, //Update with Attributes => Ok
+	{[]byte("update,00012345600012"), nil, &sampleError},                     // Update with len(Attributes) < 1  => Err
+	{[]byte("update,000123|45600012,uom=lbs,weight=300"), nil, &sampleError}, //Invalid character '|'
+	{[]byte("update,00012345600012,uom=lbs,weight=3|00"), nil, &sampleError}, //Invalid character '|'
 }
 
 func compareExpectedActualError(expectedErr error, actualError error) bool {
-	var areEqual bool
-	if expectedErr != nil {
-		areEqual = expectedErr.Error() == actualError.Error()
-	} else {
-		areEqual = reflect.TypeOf(expectedErr) == reflect.TypeOf(actualError)
-	}
-	return areEqual
+	return reflect.TypeOf(expectedErr) == reflect.TypeOf(actualError)
 }
 
 func compareStructs(expected, actual MdPayload) bool {

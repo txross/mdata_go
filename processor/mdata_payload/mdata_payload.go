@@ -5,6 +5,7 @@ import (
 	"github.com/hyperledger/sawtooth-sdk-go/processor"
 	"reflect"
 	"strings"
+	"strconv"
 )
 
 type MdPayload struct {
@@ -50,6 +51,20 @@ func (p *MdPayload) invalidAttributes() bool {
 	return false
 }
 
+func (p *MdPayload) invalidGtin() bool {
+	// Verify the length of GTIN is 14 integers
+	_, err := strconv.Atoi(p.Gtin)
+	if err != nil {
+		// Error converting string to int; invalid
+		return true
+	}
+	else {
+		if len(p.Gtin) != 14 {
+			return true
+		}
+	}
+	return false
+}
 
 func FromBytes(payloadData []byte) (*MdPayload, error) {
 	if payloadData == nil {

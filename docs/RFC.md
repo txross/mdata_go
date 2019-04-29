@@ -10,7 +10,7 @@ The intercompany consortium is working to automate the resolution of sales & tra
 
 To resolve claims, the ledger must be able to **(a)** privately conduct trade transactions between and among parties and **(b)** publicly share master data to support the private transactions. 
 
-The purpose of this repository is to enable function **b** and provide a transaction processor for use by all nodes in the consortium that can create, update, delete, and otherwise maintain shared product master data publicly on chain. The data supplied by this transaction processor will be data queried by private Sabre trade transactions to validate the business logic of the Sabre smart contracts supporting function **a**. 
+The purpose of this repository is to enable function **b** and provide a transaction processor for use by all nodes in the consortium that can create, update, delete, and otherwise maintain shared product master data publicly on chain. Publicly shared master data will support function **a** by providing a transparent ledger of available products to support trade transactions. 
 
 # Transaction Processor Specification
 
@@ -58,6 +58,9 @@ hashed namespace first 6 characters | + | hashed gtin first 64 characters
 This processor relies on the standard Trasnaction and Batch processing defined [in the official Sawtooth Architecture Guide](https://sawtooth.hyperledger.org/docs/core/nightly/1-1/architecture/transactions_and_batches.html) and implements the go sdk processor (github.com/hyperledger/sawtooth-sdk-go/processor).
 
 ### ProductCreate
+
+ProductCreate action creates a new product, with or without attributes. A product's default state is "ACTIVE" upon creation.
+
 * Inputs:
     - GTIN-14
     - Optional: Attributes in the form of key=value pairs
@@ -70,6 +73,11 @@ Invalid Transactions occur in the event of:
  - GTIN already exists
 
 ### ProductUpdate
+
+ProductUpdate action allows a transaction to update a product's attributes. Provide the full list of attributes to this action. Whatever is provided to the transaction will overwrite what attributes exist at the product state address.
+
+A product's default state is "ACTIVE" upon update.
+
 * Inputs:
     - GTIN-14
     - Attributes in the form of key=value pairs
@@ -83,17 +91,23 @@ Invalid Transactions occur in the event of:
 
 If the transaction submits a GTIN with accompanying attributes that already exist, nothing will happen.
 
-### ProductDeactivate
+### ProductSetState
+
+ProductSetState action takes an input GTIN product identifier and a state keyword to set the product's state to either "ACTIVE" or "INACTIVE". A product's default state is "ACTIVE".
+
 * Inputs:
     - GTIN-14
 * Outputs
-    - State address of deactivated product
+    - State address of product
 
 Invalid Transactions occur in the event of:
  - Invalid GTIN (not one of GTIN-14 spec)
  - GTIN does not exist
 
 ### ProductDelete
+
+ProductDelete action will delete a product from state. The product must be set to "INACTIVE" state before deletion. 
+
 * Inputs:
     - GTIN-14
 * Outputs
