@@ -7,8 +7,8 @@ import (
 )
 
 var testGtin string = "01234567891234"
-var testAttributes Attributes = Attributes{"uom": "cases"}
-var testSetNewAttributes Attributes = Attributes{"uom": "lbs", "weight": "300"}
+var testAttributes Attributes = &Attributes{"uom": "cases"}
+var testSetNewAttributes Attributes = &Attributes{"uom": "lbs", "weight": "300"}
 var testState string = "ACTIVE"
 var testGtinAddress string = makeAddress(testGtin)
 var toDeleteGtin string = "555555555555"
