@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"crypto/sha512"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
