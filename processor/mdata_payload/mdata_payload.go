@@ -28,7 +28,7 @@ func (p MdPayload) invaildChar() (bool, string) {
 			}
 		}
 		if v.Kind() == reflect.Slice {
-			for _, value := range attrField.Interface().([]string) {
+			for _, value := range v.Interface().([]string) {
 				if strings.Contains(value, "|") {
 					fmt.Println("Invalid char found!")
 				}
