@@ -46,10 +46,10 @@ type Attributes map[string]interface{}
 func (self Attributes) serialize() []byte {
 	var b bytes.Buffer
 	var i int = 0
-	for k, v := range a {
+	for k, v := range self {
 		b.WriteString(fmt.Sprintf("%v=%v", k, v))
 		i += 1
-		if i < len(a) {
+		if i < len(self) {
 			b.WriteString(",")
 		}
 	}

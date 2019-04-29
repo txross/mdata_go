@@ -7,21 +7,21 @@ import (
 )
 
 var testGtin string = "01234567891234"
-var testMtrl string = "12345-67890"
-var testSetNewMtrl string = "67890-12345"
+var testAttributes Attributes = Attributes{"uom": "cases"}
+var testSetNewAttributes Attributes = Attributes{"uom": "lbs", "weight": "300"}
 var testState string = "ACTIVE"
 var testGtinAddress string = makeAddress(testGtin)
 var toDeleteGtin string = "555555555555"
 var toDeleteGtinAddress string = makeAddress(toDeleteGtin)
 var testProduct Product = Product{
-	Gtin:  testGtin,
-	Mtrl:  testMtrl,
-	State: testState,
+	Gtin:       testGtin,
+	Attributes: testAttributes,
+	State:      testState,
 }
 var testSetNewProduct Product = Product{
-	Gtin:  testGtin,
-	Mtrl:  testSetNewMtrl,
-	State: testState,
+	Gtin:       testGtin,
+	Attributes: testSetNewAttributes,
+	State:      testState,
 }
 var sampleError = errors.New("sample")
 
@@ -185,9 +185,9 @@ func TestDeleteProduct(t *testing.T) {
 		testProductSlice[0] = &testProduct
 
 		testProduct2 := Product{
-			Gtin:  toDeleteGtin,
-			Mtrl:  "77777-777777",
-			State: "INACTIVE",
+			Gtin:       toDeleteGtin,
+			Attributes: Attributes{"uom": "cases"},
+			State:      "INACTIVE",
 		}
 		testProductSlice[1] = &testProduct2
 
