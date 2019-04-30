@@ -108,6 +108,20 @@ class MdClient:
         except BaseException:
             return None
 
+    def set_state(self, gtin, state, auth_user=None, auth_password=None):
+        if state == "ACTIVE":
+            action = "activate"
+        elif state == "INACTIVE":
+            action = "deactivate"
+            
+        return self._send_mdata_txn(
+            gtin,
+            action,
+            attributes,
+            wait=wait,
+            auth_user=auth_user,
+            auth_password=auth_password)
+
     def show(self, gtin, auth_user=None, auth_password=None):
         address = self._get_address(gtin)
 
