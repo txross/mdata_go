@@ -65,30 +65,30 @@ class MdClient:
         self._signer = CryptoFactory(create_context('secp256k1')) \
             .new_signer(private_key)
 
-    # def create(self, gtin, wait=None, auth_user=None, auth_password=None):
-    #     return self._send_mdata_txn(
-    #         name,
-    #         "create",
-    #         wait=wait,
-    #         auth_user=auth_user,
-    #         auth_password=auth_password)
+    def create(self, gtin, wait=None, auth_user=None, auth_password=None):
+        return self._send_mdata_txn(
+            gtin,
+            "create",
+            wait=wait,
+            auth_user=auth_user,
+            auth_password=auth_password)
 
-    # def delete(self, name, wait=None, auth_user=None, auth_password=None):
-    #     return self._send_xo_txn(
-    #         name,
-    #         "delete",
-    #         wait=wait,
-    #         auth_user=auth_user,
-    #         auth_password=auth_password)
+    def delete(self, gtin, wait=None, auth_user=None, auth_password=None):
+        return self._send_mdata_txn(
+            gtin,
+            "delete",
+            wait=wait,
+            auth_user=auth_user,
+            auth_password=auth_password)
 
-    # def take(self, gtin, mtrl, wait=None, auth_user=None, auth_password=None):
-    #     return self._send_xo_txn(
-    #         name,
-    #         "take",
-    #         space,
-    #         wait=wait,
-    #         auth_user=auth_user,
-    #         auth_password=auth_password)
+    def update(self, gtin, attributes, wait=None, auth_user=None, auth_password=None):
+        return self._send_mdata_txn(
+            gtin,
+            "update",
+            attributes,
+            wait=wait,
+            auth_user=auth_user,
+            auth_password=auth_password)
 
     def list(self, auth_user=None, auth_password=None):
         mdata_prefix = self._get_prefix()
@@ -187,12 +187,13 @@ class MdClient:
     def _send_mdata_txn(self,
                         gtin,
                         action,
-                        mtrl="",
+                        attributes=[""],
                         wait=None,
                         auth_user=None,
                         auth_password=None):
         # Serialization is just a delimited utf-8 encoded string
-        payload = ",".join([str(gtin), action, str(mtrl)]).encode()
+        # 
+        payload = ",".join([str(gtin), action, ",".join(attributes)]).encode()
 
         # Construct the address
         address = self._get_address(gtin)

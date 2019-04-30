@@ -205,6 +205,7 @@ func deserialize(data []byte) (map[string]*Product, error) {
 func serialize(products []*Product) []byte {
 	var buffer bytes.Buffer
 	for i, product := range products {
+		//00001234567890,uom=cases,weight=200,ACTIVE|
 		buffer.WriteString(product.Gtin)
 		buffer.WriteString(",")
 		buffer.WriteString(string(product.Attributes.serialize()))
