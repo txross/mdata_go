@@ -65,10 +65,11 @@ class MdClient:
         self._signer = CryptoFactory(create_context('secp256k1')) \
             .new_signer(private_key)
 
-    def create(self, gtin, wait=None, auth_user=None, auth_password=None):
+    def create(self, gtin, attributes, wait=None, auth_user=None, auth_password=None):
         return self._send_mdata_txn(
             gtin,
             "create",
+            attributes,
             wait=wait,
             auth_user=auth_user,
             auth_password=auth_password)
