@@ -30,22 +30,22 @@ var testPayloads = map[string]struct {
 		outError:   &sampleError,
 	},
 	"missingGtinCreate": { //Missing GTIN => Err
-		in:         []byte("create"),
+		in:         []byte("create,,,"),
 		outPayload: nil,
 		outError:   &sampleError,
 	},
 	"missingGtinUpdate": { //Missing GTIN => Err
-		in:         []byte("update,uom=cases"),
+		in:         []byte("update,,uom=cases,"),
 		outPayload: nil,
 		outError:   &sampleError,
 	},
 	"missingAction": { //Missing action => Err
-		in:         []byte(",00012345600012,uom=cases"),
+		in:         []byte(",00012345600012,uom=cases,"),
 		outPayload: nil,
 		outError:   &sampleError,
 	},
 	"validAttributesCreate": { //Create with valid Attributes => Ok
-		in:         []byte("create,00012345600012,uom=cases"),
+		in:         []byte("create,00012345600012,uom=cases,"),
 		outPayload: &MdPayload{Action: "create", Gtin: "00012345600012", Attributes: []string{"uom=lbs"}},
 		outError:   nil,
 	},
@@ -55,17 +55,17 @@ var testPayloads = map[string]struct {
 		outError:   nil,
 	},
 	"noAttributesUpdate": { // Update with len(Attributes) < 1  => Err
-		in:         []byte("update,00012345600012"),
+		in:         []byte("update,00012345600012,,"),
 		outPayload: nil,
 		outError:   &sampleError,
 	},
 	"invalidCharGtin": { //Invalid character '|' => Err
-		in:         []byte("update,000123|45600012,uom=lbs,weight=300"),
+		in:         []byte("update,000123|45600012,uom=lbs,weight=300,"),
 		outPayload: nil,
 		outError:   &sampleError,
 	},
 	"invalidCharAttr": { //Invalid character '|'  => Err
-		in:         []byte("update,00012345600012,uom=lbs,weight=3|00"),
+		in:         []byte("update,00012345600012,uom=lbs,weight=3|00,"),
 		outPayload: nil,
 		outError:   &sampleError,
 	},
