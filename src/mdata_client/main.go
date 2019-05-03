@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	flags "github.com/jessevdk/go-flags"
-	"mdata_go/src/mdata_client/client"
 	"mdata_go/src/mdata_client/commands"
 	"mdata_go/src/mdata_client/commands/create"
 	"mdata_go/src/mdata_client/commands/delete"
@@ -31,7 +30,6 @@ import (
 	"mdata_go/src/mdata_client/commands/update"
 	"mdata_go/src/mdata_client/constants"
 	"os"
-	"strings"
 )
 
 type Opts struct {
