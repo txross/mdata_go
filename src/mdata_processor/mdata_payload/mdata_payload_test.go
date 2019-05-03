@@ -50,7 +50,7 @@ var testPayloads = map[string]struct {
 		outError:   nil,
 	},
 	"validAttributesUpdate": { //Update with Attributes => Ok
-		in:         []byte("update,00012345600012,uom=lbs,weight=300"),
+		in:         []byte("update,00012345600012,uom=lbs,weight=300,"),
 		outPayload: &MdPayload{Action: "update", Gtin: "00012345600012", Attributes: []string{"uom=lbs", "weight=300"}},
 		outError:   nil,
 	},
