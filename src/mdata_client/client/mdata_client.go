@@ -191,6 +191,8 @@ func (mdataClient MdataClient) List() ([]byte, error) {
 	}
 	encodedEntries := responseMap["data"].([]interface{})
 
+	var buffer bytes.Buffer
+
 	for _, entry := range encodedEntries {
 		entryData, ok := entry.(map[interface{}]interface{})
 		if !ok {
@@ -210,7 +212,7 @@ func (mdataClient MdataClient) List() ([]byte, error) {
 				errors.New(fmt.Sprint("Error decoding: %v", err))
 		}
 
-		toReturn = append(toReturn, decodedBytes)
+		toReturn = append(toReturn, decodedBytes...)
 	}
 	return toReturn, nil
 }
