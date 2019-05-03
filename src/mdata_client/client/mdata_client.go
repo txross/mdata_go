@@ -191,8 +191,6 @@ func (mdataClient MdataClient) List() ([]byte, error) {
 	}
 	encodedEntries := responseMap["data"].([]interface{})
 
-	var buffer bytes.Buffer
-
 	for _, entry := range encodedEntries {
 		entryData, ok := entry.(map[interface{}]interface{})
 		if !ok {
