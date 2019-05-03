@@ -22,6 +22,12 @@ import (
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	flags "github.com/jessevdk/go-flags"
 	"mdata_go/src/mdata_client/commands"
+	"mdata_go/src/mdata_client/commands/create"
+	"mdata_go/src/mdata_client/commands/delete"
+	"mdata_go/src/mdata_client/commands/list"
+	"mdata_go/src/mdata_client/commands/set"
+	"mdata_go/src/mdata_client/commands/show"
+	"mdata_go/src/mdata_client/commands/update"
 	"mdata_go/src/mdata_client/constants"
 	"os"
 )
@@ -56,12 +62,12 @@ func main() {
 
 	// Add sub-commands
 	commands := []commands.Command{
-		&commands.Create{},
-		&commands.Delete{},
-		&commands.Update{},
-		&commands.Set{},
-		&commands.Show{},
-		&commands.List{},
+		&create.Create{},
+		&delete.Delete{},
+		&update.Update{},
+		&set.Set{},
+		&show.Show{},
+		&list.List{},
 	}
 
 	for _, cmd := range commands {
