@@ -56,7 +56,7 @@ func (args *Delete) Run() error {
 	gtin := args.Args.Gtin
 	wait := args.Wait
 
-	mdataClient, err := GetClient(args, true)
+	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
 		return err
 	}

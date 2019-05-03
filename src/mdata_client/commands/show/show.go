@@ -21,6 +21,7 @@ import (
 	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"mdata_go/src/mdata_client/client"
+	"strings"
 )
 
 type Show struct {
@@ -54,7 +55,7 @@ func (args *Show) Run() error {
 	//TODO: Check back here after mdataClient.Show() has been defined
 	// Construct client
 	gtin := args.Args.Gtin
-	mdataClient, err := GetClient(args, false)
+	mdataClient, err := client.GetClient(args, false)
 	if err != nil {
 		return err
 	}

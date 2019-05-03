@@ -26,7 +26,7 @@ import (
 type Update struct {
 	Args struct {
 		Gtin       string            `positional-arg-name:"gtin" required:"true" description:"Identify the gtin of the product to update"`
-		Attributes string[string] `long:"attributes" short:"a" required:"true" description:"Specify key:value pair to define product attributes"`
+		Attributes map[string]string `long:"attributes" short:"a" required:"true" description:"Specify key:value pair to define product attributes"`
 	} `positional-args:"true"`
 	Url     string `long:"url" description:"Specify URL of REST API"`
 	Keyfile string `long:"keyfile" description:"Identify file containing user's private key"`
@@ -59,7 +59,7 @@ func (args *Update) Run() error {
 	attributes := args.Args.Attributes
 	wait := args.Wait
 
-	mdataClient, err := GetClient(args, true)
+	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
 		return err
 	}

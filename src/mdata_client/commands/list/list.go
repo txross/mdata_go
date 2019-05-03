@@ -52,7 +52,7 @@ func (args *List) Run() error {
 
 	//TODO: Check back here after List() has been defined in mdataClient
 	// Construct client
-	mdataClient, err := GetClient(args, false)
+	mdataClient, err := client.GetClient(args, false)
 	if err != nil {
 		return err
 	}
@@ -63,15 +63,15 @@ func (args *List) Run() error {
 
 	fmt.Printf("%-15v\t%-40v\t%-10v\t\n", "GTIN", "ATTRIBUTES", "STATE")
 
-	for _, product  := range products {
-		for _, str in strings.Split(string(product), "|") {
-			parts := strings.Split(sring(str), ",")
+	for _, product := range products {
+		for _, str := range strings.Split(string(product), "|") {
+			parts := strings.Split(string(str), ",")
 			gtin := parts[0]
 			attrs := parts[1 : len(parts)-1]
 			state := parts[len(parts)-1]
 
 			fmt.Printf("%-v\t%-v\t%-v\t\n", gtin, attrs, state)
-		} 
+		}
 	}
 	return nil
 }

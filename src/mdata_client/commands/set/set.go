@@ -58,7 +58,7 @@ func (args *Set) Run() error {
 	state := args.Args.State
 	wait := args.Wait
 
-	mdataClient, err := GetClient(args, true)
+	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
 		return err
 	}
