@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	"github.com/hyperledger/sawtooth-sdk-go/protobuf/batch_pb2"
 	"github.com/hyperledger/sawtooth-sdk-go/protobuf/transaction_pb2"
 	"github.com/hyperledger/sawtooth-sdk-go/signing"
@@ -41,10 +42,12 @@ import (
 	"time"
 )
 
+var logger *logging.Logger = logging.Get()
+
 func GetClient(args commands.Command, readFile bool) (MdataClient, error) {
 	url := args.UrlPassed()
 	if url == "" {
-		url = DEFAULT_URL
+		url = constants.DEFAULT_URL
 	}
 	keyfile := ""
 	if readFile {
@@ -172,7 +175,7 @@ func (mdataClient MdataClient) List() ([]byte, error) {
 
 	// API to call
 	apiSuffix := fmt.Sprintf("%s?address=%s",
-		STATE_API, mdataClient.getPrefix())
+		constants.STATE_API, mdataClient.getPrefix())
 	response, err := mdataClient.sendRequest(apiSuffix, []byte{}, "", "")
 	if err != nil {
 		return []byte{}, err
@@ -214,7 +217,7 @@ func (mdataClient MdataClient) List() ([]byte, error) {
 
 func (mdataClient MdataClient) Show(gtin string) (string, error) {
 
-	apiSuffix := fmt.Sprintf("%s/%s", STATE_API, mdataClient.getAddress(gtin))
+	apiSuffix := fmt.Sprintf("%s/%s", constants.STATE_API, mdataClient.getAddress(gtin))
 	response, err := mdataClient.sendRequest(apiSuffix, []byte{}, "", gtin)
 	if err != nil {
 		return "", err
