@@ -5,7 +5,7 @@ import (
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	"github.com/hyperledger/sawtooth-sdk-go/processor"
 	flags "github.com/jessevdk/go-flags"
-	md "mdata_go/handler"
+	md "mdata_go/src/mdata_processor/handler"
 	"os"
 	"syscall"
 )

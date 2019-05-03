@@ -12,6 +12,7 @@ type MdPayload struct {
 	Action     string
 	Gtin       string
 	Attributes []string
+	State      string
 }
 
 func (p MdPayload) invaildChar() (bool, string) {
@@ -52,7 +53,7 @@ func (p *MdPayload) invalidAttributes() bool {
 }
 
 func (p *MdPayload) invalidGtin() bool {
-	// Verify the length of GTIN is 14 integers
+	// Verify the length of GTIN is 14 integers (no symbols, no letters)
 	_, err := strconv.Atoi(p.Gtin)
 	if err != nil {
 		// Error converting string to int; invalid
@@ -64,6 +65,21 @@ func (p *MdPayload) invalidGtin() bool {
 	}
 
 	return false
+}
+
+func (p *MdPayload) invalidState() bool {
+	// Verify the state setting is valid: one of ACTIVE, INACTIVE, DISCONTINUED
+	validStates := []string{"ACTIVE", "INACTIVE", "DISCONTINUED", ""}
+	var foundMatch bool
+	for _, state := range validStates {
+		if p.State == state {
+			foundMatch = true
+		}
+		if foundMatch {
+			return false
+		}
+	}
+	return true
 }
 
 func FromBytes(payloadData []byte) (*MdPayload, error) {
@@ -82,7 +98,8 @@ func FromBytes(payloadData []byte) (*MdPayload, error) {
 	payload := MdPayload{}
 	payload.Action = parts[0]
 	payload.Gtin = parts[1]
-	payload.Attributes = parts[2:len(parts)]
+	payload.Attributes = parts[2 : len(parts)-1]
+	payload.State = parts[len(parts)-1]
 
 	if len(payload.Action) < 1 {
 		return nil, &processor.InvalidTransactionError{Msg: "Action is required"}
@@ -100,6 +117,17 @@ func FromBytes(payloadData []byte) (*MdPayload, error) {
 	if payload.Action == "update" {
 		if len(payload.Attributes) < 1 {
 			return nil, &processor.InvalidTransactionError{Msg: "Attributes are required for update"}
+		}
+	}
+
+	if payload.Action == "set" {
+		if len(payload.State) < 1 {
+			return nil, &processor.InvalidTransactionError{Msg: "State is required to set"}
+		}
+
+		if payload.invalidState() {
+			return nil, &processor.InvalidTransactionError{
+				Msg: fmt.Sprintf("Invalid state (state must be one of ACTIVE, INACTIVE, DISCONTINUED): %v", payload.Attributes)}
 		}
 	}
 

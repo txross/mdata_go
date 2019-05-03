@@ -185,7 +185,7 @@ func deserialize(data []byte) (map[string]*Product, error) {
 	products := make(map[string]*Product)
 	for _, str := range strings.Split(string(data), "|") {
 		parts := strings.Split(string(str), ",")
-		if len(parts) < 3 { //Product must have three serialized attributes (even if Product.Attributes is empty)
+		if len(parts) < 3 { //Product must have at least three serialized attributes (even if Product.Attributes is empty)
 			return nil, &processor.InternalError{
 				Msg: fmt.Sprintf("Malformed product data: '%v'", string(data))}
 		}

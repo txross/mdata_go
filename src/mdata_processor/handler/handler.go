@@ -19,8 +19,8 @@ package handler
 
 import (
 	"fmt"
-	"mdata_go/mdata_payload"
-	"mdata_go/mdata_state"
+	"mdata_go/src/mdata_processor/mdata_payload"
+	"mdata_go/src/mdata_processor/mdata_state"
 	"strings"
 
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
@@ -122,22 +122,13 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 		product.State = "ACTIVE"
 		displayUpdate(payload, signer, product)
 		return mdState.SetProduct(payload.Gtin, product)
-	case "deactivate":
-		err := validateStateChange(mdState, payload.Gtin, payload.Action)
+	case "set":
+		err := validateStateChange(mdState, payload.Gtin, payload.State)
 		if err != nil {
 			return err
 		}
 		product, _ := mdState.GetProduct(payload.Gtin) //err is not needed here, as it is checked in the validateDeactivate function
-		product.State = "INACTIVE"
-		displayStateChange(payload, signer, product)
-		return mdState.SetProduct(payload.Gtin, product)
-	case "activate":
-		err := validateStateChange(mdState, payload.Gtin, payload.Action)
-		if err != nil {
-			return err
-		}
-		product, _ := mdState.GetProduct(payload.Gtin) //err is not needed here, as it is checked in the validateDeactivate function
-		product.State = "ACTIVE"
+		product.State = payload.State
 		displayStateChange(payload, signer, product)
 		return mdState.SetProduct(payload.Gtin, product)
 	default:
@@ -193,23 +184,10 @@ func validateStateChange(mdState *mdata_state.MdState, gtin string, action strin
 		return err
 	}
 	if product == nil {
-		return &processor.InvalidTransactionError{Msg: "Activate/Deactivate requires an existing product"}
+		return &processor.InvalidTransactionError{Msg: "Set state requires an existing product"}
 	}
 
-	switch action {
-	case "deactivate":
-		if product.State == "INACTIVE" {
-			return &processor.InvalidTransactionError{
-				Msg: fmt.Sprintf("Product already in state: %v", product.State)}
-		}
-	case "activate":
-		if product.State == "ACTIVE" {
-			return &processor.InvalidTransactionError{
-				Msg: fmt.Sprintf("Product already in state: %v", product.State)}
-		}
-	default:
-		return nil
-	}
+	return nil
 }
 
 func displayStateChange(payload *mdata_payload.MdPayload, signer string, product *mdata_state.Product) {
