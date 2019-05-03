@@ -101,7 +101,7 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 		}
 		product := &mdata_state.Product{
 			Gtin:       payload.Gtin,
-			Attributes: mdata_state.deserializeAttributes(payload.Attributes),
+			Attributes: mdata_state.DeserializeAttributes(payload.Attributes),
 			State:      "ACTIVE",
 		}
 		displayCreate(payload, signer)
@@ -118,7 +118,7 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 			return err
 		}
 		product, _ := mdState.GetProduct(payload.Gtin) //err is not needed here, as it is checked in the validateUpdate function
-		product.Attributes = mdata_state.deserializeAttributes(payload.Attributes)
+		product.Attributes = mdata_state.DeserializeAttributes(payload.Attributes)
 		product.State = "ACTIVE"
 		displayUpdate(payload, signer, product)
 		return mdState.SetProduct(payload.Gtin, product)

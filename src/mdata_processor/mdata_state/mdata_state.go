@@ -55,7 +55,7 @@ func (self Attributes) serialize() []byte {
 	return b.Bytes()
 }
 
-func deserializeAttributes(a []string) Attributes {
+func DeserializeAttributes(a []string) Attributes {
 	A := Attributes{}
 	for _, str := range a {
 		if str != "" {
@@ -194,7 +194,7 @@ func deserialize(data []byte) (map[string]*Product, error) {
 
 		product := &Product{
 			Gtin:       parts[0],
-			Attributes: deserializeAttributes(attrs),
+			Attributes: DeserializeAttributes(attrs),
 			State:      parts[len(parts)-1],
 		}
 		products[parts[0]] = product
