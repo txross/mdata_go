@@ -15,51 +15,53 @@
  * ------------------------------------------------------------------------------
  */
 
-package delete
+package commands
 
 import (
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
 	"mdata_go/src/mdata_client/client"
 )
 
-type Delete struct {
+type Set struct {
 	Args struct {
-		Gtin string `positional-arg-name:"gtin" required:"true" description:"Identify the gtin of the product to delete"`
+		Gtin  string `positional-arg-name:"gtin" required:"true" description:"Identify the gtin of the product to set state"`
+		State string `positional-arg-name:"state" required:"true" description:"Specify the state to set the <gtin>: ACTIVE, INACTIVE, DISCONTINUED" choice:"INACTIVE" choice:"ACTIVE" choice:"DISCONTINUED"`
 	} `positional-args:"true"`
 	Url     string `long:"url" description:"Specify URL of REST API"`
 	Keyfile string `long:"keyfile" description:"Identify file containing user's private key"`
 	Wait    uint   `long:"wait" description:"Set time, in seconds, to wait for transaction to commit"`
 }
 
-func (args *Delete) Name() string {
-	return "delete"
+func (args *Set) Name() string {
+	return "set"
 }
 
-func (args *Delete) KeyfilePassed() string {
+func (args *Set) KeyfilePassed() string {
 	return args.Keyfile
 }
 
-func (args *Delete) UrlPassed() string {
+func (args *Set) UrlPassed() string {
 	return args.Url
 }
 
-func (args *Delete) Register(parent *flags.Command) error {
-	_, err := parent.AddCommand(args.Name(), "Deletes an product", "Sends an mdata transaction to delete <gtin>.", args)
+func (args *Set) Register(parent *flags.Command) error {
+	_, err := parent.AddCommand(args.Name(), "Set state of a product", "Sends an mdata transaction to set state of <gtin> to <state>.", args)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (args *Delete) Run() error {
+func (args *Set) Run() error {
 	// Construct client
 	gtin := args.Args.Gtin
+	state := args.Args.State
 	wait := args.Wait
 
 	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
 		return err
 	}
-	_, err = mdataClient.Delete(gtin, wait)
+	_, err = mdataClient.Set(gtin, state, wait)
 	return err
 }

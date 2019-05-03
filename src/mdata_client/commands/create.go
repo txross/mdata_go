@@ -15,63 +15,53 @@
  * ------------------------------------------------------------------------------
  */
 
-package show
+package commands
 
 import (
-	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"mdata_go/src/mdata_client/client"
-	"strings"
 )
 
-type Show struct {
+type Create struct {
 	Args struct {
 		Gtin string `positional-arg-name:"gtin" required:"true" description:"Identify the gtin of the product to create"`
 	} `positional-args:"true"`
-	Url string `long:"url" description:"Specify URL of REST API"`
+	Attributes map[string]string `long:"attributes" short:"a" required:"false" description:"Specify key:value pair to define product attributes"`
+	Url        string            `long:"url" description:"Specify URL of REST API"`
+	Keyfile    string            `long:"keyfile" description:"Identify file containing user's private key"`
+	Wait       uint              `long:"wait" description:"Set time, in seconds, to wait for transaction to commit"`
 }
 
-func (args *Show) Name() string {
-	return "show"
+func (args *Create) Name() string {
+	return "create"
 }
 
-func (args *Show) KeyfilePassed() string {
-	return ""
+func (args *Create) KeyfilePassed() string {
+	return args.Keyfile
 }
 
-func (args *Show) UrlPassed() string {
+func (args *Create) UrlPassed() string {
 	return args.Url
 }
 
-func (args *Show) Register(parent *flags.Command) error {
-	_, err := parent.AddCommand(args.Name(), "Displays the specified mdata attributes", "Shows the attribues of the product <gtin>.", args)
+func (args *Create) Register(parent *flags.Command) error {
+	_, err := parent.AddCommand(args.Name(), "Creates an product", "Sends an mdata transaction to create <gtin> with <attributes>.", args)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (args *Show) Run() error {
-	//TODO: Check back here after mdataClient.Show() has been defined
+func (args *Create) Run() error {
 	// Construct client
 	gtin := args.Args.Gtin
-	mdataClient, err := client.GetClient(args, false)
+	attributes := args.Attributes
+	wait := args.Wait
+
+	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
 		return err
 	}
-	products, err := mdataClient.Show(gtin)
-	if err != nil {
-		return err
-	}
-
-	productMap := make(map[string][]string)
-
-	for _, product := range strings.Split(products, "|") {
-		parts := strings.Split(product, ",")
-		gtin := parts[0]
-		productMap[gtin] = parts[1:]
-	}
-
-	fmt.Println(productMap[gtin])
-	return nil
+	_, err = mdataClient.Create(gtin, attributes, wait)
+	return err
 }

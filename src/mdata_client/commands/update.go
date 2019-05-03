@@ -15,7 +15,7 @@
  * ------------------------------------------------------------------------------
  */
 
-package update
+package commands
 
 import (
 	flags "github.com/jessevdk/go-flags"
