@@ -8,7 +8,7 @@ import (
 
 var sampleError = processor.InvalidTransactionError{Msg: "Sample Error"}
 
-var testPayloads = []struct {
+var testPayloads = map[string]struct {
 	in         []byte
 	outPayload *MdPayload
 	outError   error
@@ -24,15 +24,51 @@ var testPayloads = []struct {
 	8. Invalid character '|'
 	*/
 	//Input, expected return MdPayload, expected return Error
-	{nil, nil, &sampleError},                                 //Null payload => Err
-	{[]byte("create"), nil, &sampleError},                    //Missing GTIN => Err
-	{[]byte("update,uom=cases"), nil, &sampleError},          //Missing GTIN => Err
-	{[]byte(",00012345600012,uom=cases"), nil, &sampleError}, //Missing action => Err
-	{[]byte("create,00012345600012,uom=cases"), &MdPayload{Action: "create", Gtin: "00012345600012", Attributes: []string{"uom=lbs"}}, nil},                        //Valid Attributes => Ok
-	{[]byte("update,00012345600012,uom=lbs,weight=300"), &MdPayload{Action: "update", Gtin: "00012345600012", Attributes: []string{"uom=lbs", "weight=300"}}, nil}, //Update with Attributes => Ok
-	{[]byte("update,00012345600012"), nil, &sampleError},                     // Update with len(Attributes) < 1  => Err
-	{[]byte("update,000123|45600012,uom=lbs,weight=300"), nil, &sampleError}, //Invalid character '|'
-	{[]byte("update,00012345600012,uom=lbs,weight=3|00"), nil, &sampleError}, //Invalid character '|'
+	"nullPayload": { //Null payload => Err
+		in:         nil,
+		outPayload: nil,
+		outError:   &sampleError,
+	},
+	"missingGtinCreate": { //Missing GTIN => Err
+		in:         []byte("create"),
+		outPayload: nil,
+		outError:   &sampleError,
+	},
+	"missingGtinUpdate": { //Missing GTIN => Err
+		in:         []byte("update,uom=cases"),
+		outPayload: nil,
+		outError:   &sampleError,
+	},
+	"missingAction": { //Missing action => Err
+		in:         []byte(",00012345600012,uom=cases"),
+		outPayload: nil,
+		outError:   &sampleError,
+	},
+	"validAttributesCreate": { //Create with valid Attributes => Ok
+		in:         []byte("create,00012345600012,uom=cases"),
+		outPayload: &MdPayload{Action: "create", Gtin: "00012345600012", Attributes: []string{"uom=lbs"}},
+		outError:   nil,
+	},
+	"validAttributesUpdate": { //Update with Attributes => Ok
+		in:         []byte("update,00012345600012,uom=lbs,weight=300"),
+		outPayload: &MdPayload{Action: "update", Gtin: "00012345600012", Attributes: []string{"uom=lbs", "weight=300"}},
+		outError:   nil,
+	},
+	"noAttributesUpdate": { // Update with len(Attributes) < 1  => Err
+		in:         []byte("update,00012345600012"),
+		outPayload: nil,
+		outError:   &sampleError,
+	},
+	"invalidCharGtin": { //Invalid character '|' => Err
+		in:         []byte("update,000123|45600012,uom=lbs,weight=300"),
+		outPayload: nil,
+		outError:   &sampleError,
+	},
+	"invalidCharAttr": { //Invalid character '|'  => Err
+		in:         []byte("update,00012345600012,uom=lbs,weight=3|00"),
+		outPayload: nil,
+		outError:   &sampleError,
+	},
 }
 
 func compareExpectedActualError(expectedErr error, actualError error) bool {
