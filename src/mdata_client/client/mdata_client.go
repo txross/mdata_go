@@ -41,7 +41,7 @@ import (
 	"time"
 )
 
-func GetClient(args Command, readFile bool) (MdataClient, error) {
+func GetClient(args commands.Command, readFile bool) (MdataClient, error) {
 	url := args.UrlPassed()
 	if url == "" {
 		url = DEFAULT_URL
@@ -120,7 +120,7 @@ func (mdataClient MdataClient) Create(
 	// Requires gtin, sets state to ACTIVE, attributes are optional
 	gtin string, attrs map[string]string, wait uint) (string, error) {
 	c := MdataClientAction{}
-	c.action = VERB_CREATE
+	c.action = constants.VERB_CREATE
 	c.gtin = gtin
 	c.wait = wait
 	if len(attrs) > 0 {
@@ -136,7 +136,7 @@ func (mdataClient MdataClient) Update(
 	// Requires gtin and attributes
 	gtin string, attrs map[string]string, wait uint) (string, error) {
 	c := MdataClientAction{}
-	c.action = VERB_UPDATE
+	c.action = constants.VERB_UPDATE
 	c.gtin = gtin
 	c.wait = wait
 	c.attrs = attrs
@@ -148,7 +148,7 @@ func (mdataClient MdataClient) Delete(
 	// Requires gtin
 	gtin string, wait uint) (string, error) {
 	c := MdataClientAction{}
-	c.action = VERB_DELETE
+	c.action = constants.VERB_DELETE
 	c.gtin = gtin
 	c.wait = wait
 	c.attrs = make(map[string]string)
@@ -160,7 +160,7 @@ func (mdataClient MdataClient) Set(
 	// Requires gtin and state to change to
 	gtin string, state string, wait uint) (string, error) {
 	c := MdataClientAction{}
-	c.action = VERB_SET_STATE
+	c.action = constants.VERB_SET_STATE
 	c.gtin = gtin
 	c.wait = wait
 	c.attrs = make(map[string]string)
@@ -243,7 +243,7 @@ func (mdataClient MdataClient) getStatus(
 
 	// API to call
 	apiSuffix := fmt.Sprintf("%s?id=%s&wait=%d",
-		BATCH_STATUS_API, batchId, wait)
+		constants.BATCH_STATUS_API, batchId, wait)
 	response, err := mdataClient.sendRequest(apiSuffix, []byte{}, "", "")
 	if err != nil {
 		return "", err
@@ -309,8 +309,8 @@ func (mdataClient MdataClient) sendTransaction(c MdataClientAction, wait uint) (
 	// Construct TransactionHeader
 	rawTransactionHeader := transaction_pb2.TransactionHeader{
 		SignerPublicKey:  mdataClient.signer.GetPublicKey().AsHex(),
-		FamilyName:       FAMILY_NAME,
-		FamilyVersion:    FAMILY_VERSION,
+		FamilyName:       constants.FAMILY_NAME,
+		FamilyVersion:    constants.FAMILY_VERSION,
 		Dependencies:     []string{}, // empty dependency list
 		Nonce:            strconv.Itoa(rand.Int()),
 		BatcherPublicKey: mdataClient.signer.GetPublicKey().AsHex(),
@@ -353,7 +353,7 @@ func (mdataClient MdataClient) sendTransaction(c MdataClientAction, wait uint) (
 		waitTime := uint(0)
 		startTime := time.Now()
 		response, err := mdataClient.sendRequest(
-			BATCH_SUBMIT_API, batchList, CONTENT_TYPE_OCTET_STREAM, gtin)
+			constants.BATCH_SUBMIT_API, batchList, constants.CONTENT_TYPE_OCTET_STREAM, gtin)
 		if err != nil {
 			return "", err
 		}
@@ -371,16 +371,16 @@ func (mdataClient MdataClient) sendTransaction(c MdataClientAction, wait uint) (
 	}
 
 	return mdataClient.sendRequest(
-		BATCH_SUBMIT_API, batchList, CONTENT_TYPE_OCTET_STREAM, gtin)
+		constants.BATCH_SUBMIT_API, batchList, constants.CONTENT_TYPE_OCTET_STREAM, gtin)
 }
 
 func (mdataClient MdataClient) getPrefix() string {
-	return Sha512HashValue(FAMILY_NAME)[:FAMILY_NAMESPACE_ADDRESS_LENGTH]
+	return Sha512HashValue(constants.FAMILY_NAME)[:constants.FAMILY_NAMESPACE_ADDRESS_LENGTH]
 }
 
 func (mdataClient MdataClient) getAddress(gtin string) string {
 	prefix := mdataClient.getPrefix()
-	productAddress := Sha512HashValue(gtin)[FAMILY_VERB_ADDRESS_LENGTH:]
+	productAddress := Sha512HashValue(gtin)[constants.FAMILY_VERB_ADDRESS_LENGTH:]
 	return prefix + productAddress
 }
 
