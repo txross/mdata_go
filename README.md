@@ -38,6 +38,8 @@ Please read and review the RFC located [here](docs/RFC.md).
     go generate && \
     cd && \
     go get github.com/jessevdk/go-flags && \
-    go get github.com/stretchr/testify/mock
+    go get github.com/stretchr/testify/mock && \
+    go get github.com/btcsuite/btcd/btcec && \
+    go get gopkg.in/yaml.v2
     ```
 
