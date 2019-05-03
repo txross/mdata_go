@@ -132,7 +132,7 @@ func TestFromBytes(t *testing.T) {
 		t.Logf("Running test case: %s", name)
 		payload, err := FromBytes(test.in)
 		if compareExpectedActualPayload(test.outPayload, payload) != true || compareExpectedActualError(test.outError, err) != true {
-			t.Errorf("Test Case Failure %v FromBytes(%v) => GOT %v, %v, WANT %v, %v", name, test.in, payload, err, test.outPayload, test.outError)
+			t.Errorf("Test Case Failure %v \n FromBytes(%v) => GOT %v, %v, WANT %v, %v", name, test.in, payload, err, test.outPayload, test.outError)
 		}
 	}
 }
