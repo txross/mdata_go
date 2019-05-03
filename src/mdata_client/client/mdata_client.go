@@ -39,15 +39,6 @@ import (
 	"time"
 )
 
-// All subcommands implement this interface
-type Command interface {
-	Register(*flags.Command) error
-	Name() string
-	KeyfilePassed() string
-	UrlPassed() string
-	Run() error
-}
-
 func GetClient(args Command, readFile bool) (MdataClient, error) {
 	url := args.UrlPassed()
 	if url == "" {
