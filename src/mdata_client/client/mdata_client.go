@@ -20,6 +20,7 @@ package client
 import (
 	bytes2 "bytes"
 	"crypto/sha512"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -31,6 +32,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"mdata_go/src/mdata_client/commands"
+	"mdata_go/src/mdata_client/constants"
 	"net/http"
 	"os/user"
 	"path"
@@ -181,7 +183,7 @@ func (mdataClient MdataClient) List() ([]byte, error) {
 	responseMap := make(map[interface{}]interface{})
 	err = yaml.Unmarshal([]byte(response), &responseMap)
 	if err != nil {
-		return []map[interface{}]interface{}{},
+		return []byte{},
 			errors.New(fmt.Sprintf("Error reading response: %v", err))
 	}
 	encodedEntries := responseMap["data"].([]interface{})
