@@ -20,7 +20,6 @@ package update
 import (
 	flags "github.com/jessevdk/go-flags"
 	"mdata_go/src/mdata_client/client"
-	"strconv"
 )
 
 type Update struct {
