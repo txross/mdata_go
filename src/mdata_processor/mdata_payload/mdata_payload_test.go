@@ -128,10 +128,11 @@ func compareExpectedActualPayload(expectedPayload *MdPayload, actualPayload *MdP
 }
 
 func TestFromBytes(t *testing.T) {
-	for _, tt := range testPayloads {
-		payload, err := FromBytes(tt.in)
-		if compareExpectedActualPayload(tt.outPayload, payload) != true || compareExpectedActualError(tt.outError, err) != true {
-			t.Errorf("FromBytes(%v) => GOT %v, %v, WANT %v, %v", tt.in, payload, err, tt.outPayload, tt.outError)
+	for name, test := range testPayloads {
+		t.Logf("Running test case: %s", name)
+		payload, err := FromBytes(test.in)
+		if compareExpectedActualPayload(test.outPayload, payload) != true || compareExpectedActualError(test.outError, err) != true {
+			t.Errorf("Test Case Failure %v FromBytes(%v) => GOT %v, %v, WANT %v, %v", name, test.in, payload, err, test.outPayload, test.outError)
 		}
 	}
 }
