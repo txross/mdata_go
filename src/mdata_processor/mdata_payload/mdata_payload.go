@@ -97,21 +97,23 @@ func FromBytes(payloadData []byte) (*MdPayload, error) {
 
 	payload := MdPayload{}
 	payload.Action = parts[0]
-	payload.Gtin = parts[1]
-	payload.Attributes = parts[2 : len(parts)-1]
-	payload.State = parts[len(parts)-1]
 
 	if len(payload.Action) < 1 {
 		return nil, &processor.InvalidTransactionError{Msg: "Action is required"}
 	}
 
+	payload.Gtin = parts[1]
+
 	if payload.invalidGtin() {
 		return nil, &processor.InvalidTransactionError{Msg: "Gtin-14 is required"}
 	}
 
-	if payload.invalidAttributes() {
-		return nil, &processor.InvalidTransactionError{
-			Msg: fmt.Sprintf("Invalid attributes (attributes must be in key=value pairs): %v", payload.Attributes)}
+	if len(parts) > 2 {
+		payload.Attributes = parts[2 : len(parts)-1]
+		if payload.invalidAttributes() {
+			return nil, &processor.InvalidTransactionError{
+				Msg: fmt.Sprintf("Invalid attributes (attributes must be in key=value pairs): %v", payload.Attributes)}
+		}
 	}
 
 	if payload.Action == "update" {
@@ -121,6 +123,7 @@ func FromBytes(payloadData []byte) (*MdPayload, error) {
 	}
 
 	if payload.Action == "set" {
+		payload.State = parts[len(parts)-1]
 		if len(payload.State) < 1 {
 			return nil, &processor.InvalidTransactionError{Msg: "State is required to set"}
 		}
