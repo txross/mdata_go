@@ -32,7 +32,6 @@ import (
 	"mdata_go/src/mdata_client/constants"
 	"os"
 	"os/user"
-	"path"
 	"strings"
 )
 
