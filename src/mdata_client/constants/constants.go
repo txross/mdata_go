@@ -15,7 +15,7 @@
  * ------------------------------------------------------------------------------
  */
 
-package main
+package constants
 
 const (
 	// String literals

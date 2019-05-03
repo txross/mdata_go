@@ -15,11 +15,12 @@
  * ------------------------------------------------------------------------------
  */
 
-package main
+package list
 
 import (
 	"fmt"
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
+	"mdata_go/src/mdata_client/client"
 	"strings"
 )
 
@@ -60,7 +61,7 @@ func (args *List) Run() error {
 		return err
 	}
 
-	fmt.Println("GTIN", "ATTRIBUTES", "STATE")
+	fmt.Printf("%-15v\t%-40v\t%-10v\t\n", "GTIN", "ATTRIBUTES", "STATE")
 
 	for _, product  := range products {
 		for _, str in strings.Split(string(product), "|") {
@@ -69,7 +70,7 @@ func (args *List) Run() error {
 			attrs := parts[1 : len(parts)-1]
 			state := parts[len(parts)-1]
 
-			fmt.Printf("%v, %v, %v", gtin, attrs, state)
+			fmt.Printf("%-v\t%-v\t%-v\t\n", gtin, attrs, state)
 		} 
 	}
 	return nil

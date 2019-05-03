@@ -15,10 +15,11 @@
  * ------------------------------------------------------------------------------
  */
 
-package main
+package client
 
 import (
 	bytes2 "bytes"
+	"crypto/sha512"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -26,18 +27,80 @@ import (
 	"github.com/hyperledger/sawtooth-sdk-go/protobuf/batch_pb2"
 	"github.com/hyperledger/sawtooth-sdk-go/protobuf/transaction_pb2"
 	"github.com/hyperledger/sawtooth-sdk-go/signing"
+	flags "github.com/jessevdk/go-flags"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"math/rand"
+	"mdata_go/src/mdata_client/constants"
 	"net/http"
+	"os/user"
 	"strconv"
 	"strings"
 	"time"
 )
 
+// All subcommands implement this interface
+type Command interface {
+	Register(*flags.Command) error
+	Name() string
+	KeyfilePassed() string
+	UrlPassed() string
+	Run() error
+}
+
+func GetClient(args Command, readFile bool) (MdataClient, error) {
+	url := args.UrlPassed()
+	if url == "" {
+		url = DEFAULT_URL
+	}
+	keyfile := ""
+	if readFile {
+		var err error
+		keyfile, err = GetKeyfile(args.KeyfilePassed())
+		if err != nil {
+			return MdataClient{}, err
+		}
+	}
+	return NewMdataClient(url, keyfile)
+}
+
+func GetKeyfile(keyfile string) (string, error) {
+	if keyfile == "" {
+		username, err := user.Current()
+		if err != nil {
+			return "", err
+		}
+		return path.Join(
+			username.HomeDir, ".sawtooth", "keys", username.Username+".priv"), nil
+	} else {
+		return keyfile, nil
+	}
+}
+
 type MdataClient struct {
 	url    string
 	signer *signing.Signer
+}
+
+type MdataClientAction struct {
+	action string
+	gtin   string
+	wait   uint
+	attrs  map[string]string
+	state  string
+}
+
+func (c *MdataClientAction) serializePayload() string {
+	//Convert map[string]string to []string{key=value key=value...} because that is what is expected by the processor payload
+	attributes := []string{}
+	for k, v := range c.attrs {
+		attributes = append(attributes, fmt.Sprintf("%v=%v", k, v))
+	}
+
+	return fmt.Sprintf("%v,%v,%v,%v", c.action,
+		c.gtin,
+		strings.Join(attributes, ","),
+		c.state)
 }
 
 func NewMdataClient(url string, keyfile string) (MdataClient, error) {
@@ -61,23 +124,55 @@ func NewMdataClient(url string, keyfile string) (MdataClient, error) {
 }
 
 func (mdataClient MdataClient) Create(
+	// Requires gtin, sets state to ACTIVE, attributes are optional
 	gtin string, attrs map[string]string, wait uint) (string, error) {
-	return mdataClient.sendTransaction(VERB_CREATE, gtin, attrs, wait)
+	c := MdataClientAction{}
+	c.action = VERB_CREATE
+	c.gtin = gtin
+	c.wait = wait
+	if len(attrs) > 0 {
+		c.attrs = attrs
+	} else {
+		c.attrs = make(map[string]string)
+	}
+	c.state = ""
+	return mdataClient.sendTransaction(c, wait)
 }
 
 func (mdataClient MdataClient) Update(
+	// Requires gtin and attributes
 	gtin string, attrs map[string]string, wait uint) (string, error) {
-	return mdataClient.sendTransaction(VERB_UPDATE, gtin, attrs, wait)
+	c := MdataClientAction{}
+	c.action = VERB_UPDATE
+	c.gtin = gtin
+	c.wait = wait
+	c.attrs = attrs
+	c.state = ""
+	return mdataClient.sendTransaction(c, wait)
 }
 
 func (mdataClient MdataClient) Delete(
+	// Requires gtin
 	gtin string, wait uint) (string, error) {
-	return mdataClient.sendTransaction(VERB_DELETE, gtin, wait)
+	c := MdataClientAction{}
+	c.action = VERB_DELETE
+	c.gtin = gtin
+	c.wait = wait
+	c.attrs = make(map[string]string)
+	c.state = ""
+	return mdataClient.sendTransaction(c, wait)
 }
 
-func (mdataClient MdataClient) SetState(
+func (mdataClient MdataClient) Set(
+	// Requires gtin and state to change to
 	gtin string, state string, wait uint) (string, error) {
-	return mdataClient.sendTransaction(VERB_SET_STATE, gtin, state, wait)
+	c := MdataClientAction{}
+	c.action = VERB_SET_STATE
+	c.gtin = gtin
+	c.wait = wait
+	c.attrs = make(map[string]string)
+	c.state = state
+	return mdataClient.sendTransaction(c, wait)
 }
 
 func (mdataClient MdataClient) List() ([]byte, error) {
@@ -126,8 +221,6 @@ func (mdataClient MdataClient) List() ([]byte, error) {
 
 func (mdataClient MdataClient) Show(gtin string) (string, error) {
 
-	//TODO: Compare to python return of data from list
-
 	apiSuffix := fmt.Sprintf("%s/%s", STATE_API, mdataClient.getAddress(gtin))
 	response, err := mdataClient.sendRequest(apiSuffix, []byte{}, "", gtin)
 	if err != nil {
@@ -146,12 +239,10 @@ func (mdataClient MdataClient) Show(gtin string) (string, error) {
 	if err != nil {
 		return "", errors.New(fmt.Sprint("Error decoding response: %v", err))
 	}
-	responseFinal := make(map[interface{}]interface{})
-	err = cbor.Loads(responseData, &responseFinal)
-	if err != nil {
-		return "", errors.New(fmt.Sprint("Error binary decoding: %v", err))
-	}
-	return fmt.Sprintf("%v", responseFinal[gtin]), nil
+
+	strData := string(responseData)
+
+	return fmt.Sprintf("%v", strData), nil
 }
 
 func (mdataClient MdataClient) getStatus(
@@ -216,19 +307,9 @@ func (mdataClient MdataClient) sendRequest(
 	return string(reponseBody), nil
 }
 
-func (mdataClient MdataClient) sendTransaction(
-	verb string, gtin string, attrs map[string]string, wait uint) (string, error) {
-
-	// construct the payload information in CBOR format
-	payloadData := make(map[string]interface{})
-	payloadData["Verb"] = verb
-	payloadData["Gtin"] = gtin
-	payloadData["Attributes"] = attrs
-	payload, err := cbor.Dumps(payloadData)
-	if err != nil {
-		return "", errors.New(fmt.Sprintf("Failed to construct CBOR: %v", err))
-	}
-
+func (mdataClient MdataClient) sendTransaction(c MdataClientAction, wait uint) (string, error) {
+	payload := c.serializePayload()
+	gtin := c.gtin
 	// construct the address
 	address := mdataClient.getAddress(gtin)
 
@@ -242,7 +323,7 @@ func (mdataClient MdataClient) sendTransaction(
 		BatcherPublicKey: mdataClient.signer.GetPublicKey().AsHex(),
 		Inputs:           []string{address},
 		Outputs:          []string{address},
-		PayloadSha512:    Sha512HashValue(string(payload)),
+		PayloadSha512:    Sha512HashValue(payload),
 	}
 	transactionHeader, err := proto.Marshal(&rawTransactionHeader)
 	if err != nil {
@@ -346,4 +427,10 @@ func (mdataClient MdataClient) createBatchList(
 	return batch_pb2.BatchList{
 		Batches: []*batch_pb2.Batch{&batch},
 	}, nil
+}
+
+func Sha512HashValue(value string) string {
+	hashHandler := sha512.New()
+	hashHandler.Write([]byte(value))
+	return strings.ToLower(hex.EncodeToString(hashHandler.Sum(nil)))
 }

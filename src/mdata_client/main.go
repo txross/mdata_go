@@ -18,25 +18,22 @@
 package main
 
 import (
-	"crypto/sha512"
-	"encoding/hex"
 	"fmt"
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	flags "github.com/jessevdk/go-flags"
+	"mdata_go/src/mdata_client/actions/create"
+	"mdata_go/src/mdata_client/actions/delete"
+	"mdata_go/src/mdata_client/actions/list"
+	"mdata_go/src/mdata_client/actions/set"
+	"mdata_go/src/mdata_client/actions/show"
+	"mdata_go/src/mdata_client/actions/update"
+	"mdata_go/src/mdata_client/client"
+	"mdata_go/src/mdata_client/constants"
 	"os"
 	"os/user"
 	"path"
 	"strings"
 )
-
-// All subcommands implement this interface
-type Command interface {
-	Register(*flags.Command) error
-	Name() string
-	KeyfilePassed() string
-	UrlPassed() string
-	Run() error
-}
 
 type Opts struct {
 	Verbose []bool `short:"v" long:"verbose" description:"Enable more verbose output"`
@@ -75,6 +72,7 @@ func main() {
 		&Show{},
 		&List{},
 	}
+
 	for _, cmd := range commands {
 		err := cmd.Register(parser.Command)
 		if err != nil {
@@ -124,39 +122,4 @@ func main() {
 	}
 
 	fmt.Println("Error: Command not found: ", name)
-}
-
-func Sha512HashValue(value string) string {
-	hashHandler := sha512.New()
-	hashHandler.Write([]byte(value))
-	return strings.ToLower(hex.EncodeToString(hashHandler.Sum(nil)))
-}
-
-func GetClient(args Command, readFile bool) (MdataClient, error) {
-	url := args.UrlPassed()
-	if url == "" {
-		url = DEFAULT_URL
-	}
-	keyfile := ""
-	if readFile {
-		var err error
-		keyfile, err = GetKeyfile(args.KeyfilePassed())
-		if err != nil {
-			return MdataClient{}, err
-		}
-	}
-	return NewMdataClient(url, keyfile)
-}
-
-func GetKeyfile(keyfile string) (string, error) {
-	if keyfile == "" {
-		username, err := user.Current()
-		if err != nil {
-			return "", err
-		}
-		return path.Join(
-			username.HomeDir, ".sawtooth", "keys", username.Username+".priv"), nil
-	} else {
-		return keyfile, nil
-	}
 }

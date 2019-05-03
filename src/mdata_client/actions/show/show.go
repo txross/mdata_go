@@ -15,11 +15,12 @@
  * ------------------------------------------------------------------------------
  */
 
-package main
+package show
 
 import (
 	"fmt"
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
+	"mdata_go/src/mdata_client/client"
 )
 
 type Show struct {
@@ -57,10 +58,19 @@ func (args *Show) Run() error {
 	if err != nil {
 		return err
 	}
-	attributes, err := mdataClient.Show(gtin)
+	products, err := mdataClient.Show(gtin)
 	if err != nil {
 		return err
 	}
-	fmt.Println(gtin, ": ", attributes)
+
+	productMap := make(map[string][]string)
+
+	for _, product := range strings.Split(products, "|") {
+		parts := strings.Split(product, ",")
+		gtin := parts[0]
+		productMap[gtin] = parts[1:]
+	}
+
+	fmt.Println(productMap[gtin])
 	return nil
 }
