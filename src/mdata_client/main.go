@@ -31,7 +31,6 @@ import (
 	"mdata_go/src/mdata_client/commands/update"
 	"mdata_go/src/mdata_client/constants"
 	"os"
-	"os/user"
 	"strings"
 )
 
@@ -45,7 +44,7 @@ var DISTRIBUTION_VERSION string
 var logger *logging.Logger = logging.Get()
 
 func init() {
-	if len(DISTRIBUTION_VERSION) == 0 {
+	if len(constants.DISTRIBUTION_VERSION) == 0 {
 		DISTRIBUTION_VERSION = "Unknown"
 	}
 }
@@ -54,7 +53,7 @@ func main() {
 	arguments := os.Args[1:]
 	for _, arg := range arguments {
 		if arg == "-V" || arg == "--version" {
-			fmt.Println(DISTRIBUTION_NAME + " (Hyperledger Sawtooth) version " + DISTRIBUTION_VERSION)
+			fmt.Println(constants.DISTRIBUTION_NAME + " (Hyperledger Sawtooth) version " + constants.DISTRIBUTION_VERSION)
 			os.Exit(0)
 		}
 	}
@@ -64,13 +63,13 @@ func main() {
 	parser.Command.Name = "mdata"
 
 	// Add sub-commands
-	commands := []Command{
-		&Create{},
-		&Delete{},
-		&Update{},
-		&Set{},
-		&Show{},
-		&List{},
+	commands := []commands.Command{
+		&create.Create{},
+		&delete.Delete{},
+		&update.Update{},
+		&set.Set{},
+		&show.Show{},
+		&list.List{},
 	}
 
 	for _, cmd := range commands {
