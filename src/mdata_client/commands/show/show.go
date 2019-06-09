@@ -21,6 +21,8 @@ import (
 	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
+	"github.com/tross-tyson/mdata_go/src/shared/data"
+	"os"
 	"strings"
 )
 
@@ -51,27 +53,23 @@ func (args *Show) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Show) Run() error {
+func (args *Show) Run() ([]byte, error) {
 	//TODO: Check back here after mdataClient.Show() has been defined
 	// Construct client
 	gtin := args.Args.Gtin
 	mdataClient, err := client.GetClient(args, false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	products, err := mdataClient.Show(gtin)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	productMap := make(map[string][]string)
+	productMap := data.Deserialize(products)
 
-	for _, product := range strings.Split(products, "|") {
-		parts := strings.Split(product, ",")
-		gtin := parts[0]
-		productMap[gtin] = parts[1:]
-	}
+	resposne := productMap[gtin].GetJson()
 
-	fmt.Println(productMap[gtin])
-	return nil
+	os.Stdout.Write(response)
+	return response, nil
 }

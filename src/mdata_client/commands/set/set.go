@@ -52,7 +52,7 @@ func (args *Set) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Set) Run() error {
+func (args *Set) Run() ([]byte, error) {
 	// Construct client
 	gtin := args.Args.Gtin
 	state := args.Args.State
@@ -60,8 +60,20 @@ func (args *Set) Run() error {
 
 	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = mdataClient.Set(gtin, state, wait)
-	return err
+	batchStatusResponse, batchStatusErr  := mdataClient.Set(gtin, state, wait)
+
+	if batchStatusErr != nil {
+		return nil, batchStatusErr
+	}
+
+	// Query batch transaction status link
+	status, query_err := commands.GetTransactionStatus(batchStatusResponse)
+
+	if query_err != nil {
+		return nil, query_err
+	}
+
+	return byte[](status), nil
 }

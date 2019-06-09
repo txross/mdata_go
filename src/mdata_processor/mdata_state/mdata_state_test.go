@@ -3,22 +3,23 @@ package mdata_state
 import (
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/tross-tyson/mdata_go/src/shared/data"
 	"testing"
 )
 
 var testGtin string = "01234567891234"
-var testAttributes Attributes = Attributes{"uom": "cases"}
-var testSetNewAttributes Attributes = Attributes{"uom": "lbs", "weight": "300"}
+var testAttributes data.Attributes = data.Attributes{"uom": "cases"}
+var testSetNewAttributes data.Attributes = data.Attributes{"uom": "lbs", "weight": "300"}
 var testState string = "ACTIVE"
 var testGtinAddress string = makeAddress(testGtin)
 var toDeleteGtin string = "555555555555"
 var toDeleteGtinAddress string = makeAddress(toDeleteGtin)
-var testProduct Product = Product{
+var testProduct Product = data.Product{
 	Gtin:       testGtin,
 	Attributes: testAttributes,
 	State:      testState,
 }
-var testSetNewProduct Product = Product{
+var testSetNewProduct data.Product = data.Product{
 	Gtin:       testGtin,
 	Attributes: testSetNewAttributes,
 	State:      testState,
@@ -29,7 +30,7 @@ func TestGetProduct(t *testing.T) {
 
 	tests := map[string]struct {
 		gtin       string
-		outProduct *Product
+		outProduct *data.Product
 		err        error
 	}{
 		"error": {
@@ -56,10 +57,10 @@ func TestGetProduct(t *testing.T) {
 
 		if name == "existingProduct" {
 			returnState := make(map[string][]byte)
-			testProductSlice := make([]*Product, 1)
+			testProductSlice := make([]*data.Product, 1)
 			testProductSlice[0] = &testProduct
 
-			returnState[testGtinAddress] = serialize(testProductSlice)
+			returnState[testGtinAddress] = data.Serialize(testProductSlice)
 			testContext.On("GetState", []string{testGtinAddress}).Return(
 				returnState,
 				nil,
@@ -96,7 +97,7 @@ func TestSetProduct(t *testing.T) {
 
 	tests := map[string]struct {
 		gtin      string
-		inProduct *Product
+		inProduct *data.Product
 		err       error
 	}{
 		"newProduct": {
@@ -115,7 +116,7 @@ func TestSetProduct(t *testing.T) {
 		t.Logf("Running test case: %s", name)
 
 		testContext := &mockContext{}
-		testProductSlice := []*Product{&testProduct}
+		testProductSlice := []*data.Product{&testProduct}
 
 		if name == "newProduct" {
 			returnState := make(map[string][]byte)
@@ -124,7 +125,7 @@ func TestSetProduct(t *testing.T) {
 				nil,
 			)
 
-			data := serialize(testProductSlice)
+			data := data.Serialize(testProductSlice)
 			testContext.On("SetState", map[string][]byte{testGtinAddress: data}).Return(
 				[]string{testGtinAddress},
 				nil,
@@ -133,13 +134,13 @@ func TestSetProduct(t *testing.T) {
 
 		if name == "updateProductState" {
 			returnState := make(map[string][]byte)
-			returnState[testGtinAddress] = serialize(testProductSlice)
+			returnState[testGtinAddress] = data.Serialize(testProductSlice)
 			testContext.On("GetState", []string{testGtinAddress}).Return(
 				returnState,
 				nil,
 			)
 
-			data := serialize([]*Product{&testSetNewProduct})
+			data := data.Serialize([]*data.Product{&testSetNewProduct})
 			testContext.On("SetState", map[string][]byte{testGtinAddress: data}).Return(
 				[]string{testGtinAddress},
 				nil,
@@ -180,10 +181,10 @@ func TestDeleteProduct(t *testing.T) {
 
 		testContext := &mockContext{}
 
-		testProductSlice := make([]*Product, 2)
+		testProductSlice := make([]*data.Product, 2)
 		testProductSlice[0] = &testProduct
 
-		testProduct2 := Product{
+		testProduct2 := data.Product{
 			Gtin:       toDeleteGtin,
 			Attributes: Attributes{"uom": "cases"},
 			State:      "INACTIVE",
@@ -205,13 +206,13 @@ func TestDeleteProduct(t *testing.T) {
 
 		if name == "storeProductsWithoutDeleted" {
 			returnState := make(map[string][]byte)
-			returnState[toDeleteGtinAddress] = serialize(testProductSlice)
+			returnState[toDeleteGtinAddress] = data.Serialize(testProductSlice)
 			testContext.On("GetState", []string{toDeleteGtinAddress}).Return(
 				returnState,
 				nil,
 			)
 
-			data := serialize([]*Product{&testProduct})
+			data := data.Serialize([]*data.Product{&testProduct})
 			testContext.On("SetState", map[string][]byte{toDeleteGtinAddress: data}).Return(
 				[]string{toDeleteGtinAddress},
 				nil,

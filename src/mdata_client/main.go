@@ -20,22 +20,10 @@ package main
 import (
 	"fmt"
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
-	flags "github.com/jessevdk/go-flags"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/create"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/delete"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/list"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/set"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/show"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/update"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/constants"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/rest_service"
 	"os"
 )
-
-type Opts struct {
-	Verbose []bool `short:"v" long:"verbose" description:"Enable more verbose output"`
-	Version bool   `short:"V" long:"version" description:"Display version information"`
-}
 
 var DISTRIBUTION_VERSION string
 
@@ -45,6 +33,38 @@ func init() {
 	if len(constants.DISTRIBUTION_VERSION) == 0 {
 		DISTRIBUTION_VERSION = "Unknown"
 	}
+}
+
+func runCommandLine(parser *flags.Parser, commands []commands.Command) {
+
+	// If a sub-command was passed, run it
+	if parser.Command.Active == nil {
+		os.Exit(2)
+	}
+
+	name := parser.Command.Active.Name
+	for _, cmd := range commands {
+		if cmd.Name() == name {
+			response, err := cmd.Run()
+			if err != nil {
+				fmt.Println("Error: ", err)
+				os.Exit(1)
+			}
+			fmt.Println(response)
+			return
+		}
+	}
+
+	fmt.Println("Error: Command not found: ", name)
+
+	return
+}
+
+type Opts struct {
+	Verbose []bool `short:"v" long:"verbose" description:"Enable more verbose output"`
+	Version bool   `short:"V" long:"version" description:"Display version information"`
+	Server  bool   `short:"S" long:"server" description:"Run as REST Server instead of command line"`
+	Port    uint   `short:"p" long:"port" description:"Provide the port to run the REST Service. Default -p=8888"`
 }
 
 func main() {
@@ -60,8 +80,7 @@ func main() {
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.Command.Name = "mdata"
 
-	// Add sub-commands
-	commands := []commands.Command{
+	Commands := []commands.Command{
 		&create.Create{},
 		&delete.Delete{},
 		&update.Update{},
@@ -70,12 +89,22 @@ func main() {
 		&list.List{},
 	}
 
-	for _, cmd := range commands {
+	for _, cmd := range Commands {
 		err := cmd.Register(parser.Command)
 		if err != nil {
 			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
 			os.Exit(1)
 		}
+	}
+
+	// Set verbosity
+	switch len(opts.Verbose) {
+	case 2:
+		logger.SetLevel(logging.DEBUG)
+	case 1:
+		logger.SetLevel(logging.INFO)
+	default:
+		logger.SetLevel(logging.WARN)
 	}
 
 	remaining, err := parser.Parse()
@@ -92,31 +121,11 @@ func main() {
 		os.Exit(2)
 	}
 
-	switch len(opts.Verbose) {
-	case 2:
-		logger.SetLevel(logging.DEBUG)
-	case 1:
-		logger.SetLevel(logging.INFO)
-	default:
-		logger.SetLevel(logging.WARN)
+	if opts.Server {
+		// Instantiate RESTful API
+		rest_service.Run(opts.Port, parser)
+	} else {
+		runCommandLine(parser, commands)
 	}
 
-	// If a sub-command was passed, run it
-	if parser.Command.Active == nil {
-		os.Exit(2)
-	}
-
-	name := parser.Command.Active.Name
-	for _, cmd := range commands {
-		if cmd.Name() == name {
-			err := cmd.Run()
-			if err != nil {
-				fmt.Println("Error: ", err)
-				os.Exit(1)
-			}
-			return
-		}
-	}
-
-	fmt.Println("Error: Command not found: ", name)
 }

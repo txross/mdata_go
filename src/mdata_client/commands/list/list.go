@@ -18,10 +18,12 @@
 package list
 
 import (
+	"github.com/tross-tyson/mdata_go/src/shared/data"
 	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
 	"strings"
+	"os"
 )
 
 type List struct {
@@ -48,30 +50,25 @@ func (args *List) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *List) Run() error {
+func (args *List) Run() []byte, error {
 
 	//TODO: Check back here after List() has been defined in mdataClient
 	// Construct client
 	mdataClient, err := client.GetClient(args, false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	products, err := mdataClient.List()
 	if err != nil {
-		return err
+		return nil, err
 	}
+	
+	productMap := data.Deserialize(products)
 
-	fmt.Printf("%-15v\t%-40v\t%-10v\t\n", "GTIN", "ATTRIBUTES", "STATE")
+	response := data.GetProductMapJson(productMap)
 
-	for _, product := range products {
-		for _, str := range strings.Split(product, "|") {
-			parts := strings.Split(str, ",")
-			gtin := parts[0]
-			attrs := parts[1 : len(parts)-1]
-			state := parts[len(parts)-1]
-
-			fmt.Printf("%-v\t%-40v\t%-v\t\n", gtin, attrs, state)
-		}
-	}
-	return nil
+	fmt.Printf("Product Map\n")
+	fmt.Printf("{<gtin>: {<product data}>}\n")
+	os.Stdout.Write(response)
+	return resposne, nil
 }

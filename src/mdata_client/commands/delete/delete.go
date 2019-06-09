@@ -51,15 +51,28 @@ func (args *Delete) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Delete) Run() error {
+func (args *Delete) Run() ([]byte, error) {
 	// Construct client
 	gtin := args.Args.Gtin
 	wait := args.Wait
 
 	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = mdataClient.Delete(gtin, wait)
-	return err
+
+	batchStatusResponse, batchStatusErr := mdataClient.Delete(gtin, wait)
+
+	if batchStatusErr != nil {
+		return nil, batchStatusErr
+	}
+
+	// Query batch transaction status link
+	status, query_err := commands.GetTransactionStatus(batchStatusResponse)
+
+	if query_err != nil {
+		return nil, query_err
+	}
+
+	return byte[](status), nil
 }
