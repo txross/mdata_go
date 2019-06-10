@@ -63,7 +63,7 @@ import (
 // 	return err == nil
 // }
 
-const p *flags.Parser = parser.GetParser()
+var p *flags.Parser = parser.GetParser()
 
 type CrudResponse struct {
 	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
