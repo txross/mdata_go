@@ -24,7 +24,7 @@ func TestGetParser(t *testing.T) {
 			inCommand:        []commands.Command{},
 			inActiveCommand:  []string{"create", "12345678901234"},
 			outParser:        flags.NewNamedParser("mdata", flags.Default),
-			outActiveCommand: "",
+			outActiveCommand: "mdata",
 		},
 		"oneCommand": {
 			inCommand:        []commands.Command{&create.Create{}},
