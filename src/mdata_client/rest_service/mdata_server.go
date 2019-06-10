@@ -141,6 +141,23 @@ func updateProductAttributes(c echo.Context) error {
 
 	product := &data.Product{}
 
+	//i.e.
+	/*
+
+		SAMPLE EXPECTED HTTP REQUEST JSON
+		request_data : {
+			Product: <gtin>,
+			Atributes: {
+				<key1>: <value1>,
+				<key2>: <value2>,
+				...
+				<keyn>: <valuen>
+			},
+			State: <state>
+		}
+
+	*/
+
 	//1 Get data
 	if err := c.Bind(product); err != nil {
 		return err

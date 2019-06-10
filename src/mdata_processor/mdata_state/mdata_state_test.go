@@ -58,19 +58,8 @@ func TestGetProduct(t *testing.T) {
 
 		if name == "existingProduct" {
 			returnState := make(map[string][]byte)
-			testProductSlice := make([]*_data.Product, 1)
-			testProductSlice[0] = &testProduct
+			testProductSlice := []*_data.Product{&testProduct}
 
-			//debugging
-			fmt.Printf("Existing Product %v\n", testProductSlice[0])
-			seri := _data.Serialize(testProductSlice)
-			fmt.Printf("Serialized Product %v\n", string(seri))
-			deseri, _ := _data.Deserialize(seri)
-			fmt.Printf("DESERIALIZED PRODUCTS: \n\t %v", deseri)
-
-			fmt.Printf("\nProduct: \n\t%v", deseri[testGtin])
-			//debugging end
-			
 			returnState[testGtinAddress] = _data.Serialize(testProductSlice)
 
 			testContext.On("GetState", []string{testGtinAddress}).Return(
