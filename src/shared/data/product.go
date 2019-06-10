@@ -12,6 +12,11 @@ type Attributes map[string]interface{}
 
 func (self Attributes) Serialize() []byte {
 	var b bytes.Buffer
+
+	if len(self) == 0 {
+		return []byte(nil)
+	}
+
 	var i int = 0
 	for k, v := range self {
 		b.WriteString(fmt.Sprintf("%v=%v", k, v))
@@ -27,48 +32,15 @@ func DeserializeAttributes(a []string) Attributes {
 	A := Attributes{}
 	for _, str := range a {
 		if str != "" {
-			parts := strings.Split(str, "=")
-			k, v := parts[0], parts[1]
-			A[k] = v
+			for _, k_v_str := range strings.Split(str, ",") {
+				parts := strings.Split(k_v_str, "=")
+				k, v := parts[0], parts[1]
+				A[k] = v
+			}
 		}
 	}
 
 	return A
-}
-
-func Deserialize(data []byte) (map[string]*Product, error) {
-	products := make(map[string]*Product)
-	for _, str := range strings.Split(string(data), "|") {
-		parts := strings.Split(string(str), ",")
-		if len(parts) < 3 { //Product must have at least three serialized attributes (even if Product.Attributes is empty)
-			return nil, errors.New(fmt.Sprintf("Malformed product data: '%v'", string(data)))
-		}
-		attrs := parts[1 : len(parts)-1]
-
-		product := &Product{
-			Gtin:       parts[0],
-			Attributes: DeserializeAttributes(attrs),
-			State:      parts[len(parts)-1],
-		}
-		products[parts[0]] = product
-	}
-	return products, nil
-}
-
-func Serialize(products []*Product) []byte {
-	var buffer bytes.Buffer
-	for i, product := range products {
-		//00001234567890,uom=cases,weight=200,ACTIVE|
-		buffer.WriteString(product.Gtin)
-		buffer.WriteString(",")
-		buffer.WriteString(string(product.Attributes.Serialize()))
-		buffer.WriteString(",")
-		buffer.WriteString(product.State)
-		if i+1 != len(products) {
-			buffer.WriteString("|")
-		}
-	}
-	return buffer.Bytes()
 }
 
 type Product struct {
@@ -93,4 +65,40 @@ func GetProductMapJson(productMap map[string]*Product) []byte {
 		return nil
 	}
 	return b
+}
+
+func Deserialize(data []byte) (map[string]*Product, error) {
+	products := make(map[string]*Product)
+	for _, str := range strings.Split(string(data), "|") {
+		parts := strings.Split(string(str), ",")
+		if len(parts) < 3 { //Product must have at least three serialized attributes (even if Product.Attributes is empty)
+			return nil, errors.New(fmt.Sprintf("Malformed product data: '%v'", string(data)))
+		}
+		attrs := parts[1 : len(parts)-1]
+
+		product := &Product{
+			Gtin:       parts[0],
+			Attributes: DeserializeAttributes(attrs),
+			State:      parts[len(parts)-1],
+		}
+		products[parts[0]] = product
+	}
+	return products, nil
+}
+
+func Serialize(products []*Product) []byte {
+	var buffer bytes.Buffer
+
+	for i, product := range products {
+		//00001234567890,uom=cases,weight=200,ACTIVE|
+		buffer.WriteString(product.Gtin)
+		buffer.WriteString(",")
+		buffer.Write(product.Attributes.Serialize())
+		buffer.WriteString(",")
+		buffer.WriteString(product.State)
+		if i+1 != len(products) {
+			buffer.WriteString("|")
+		}
+	}
+	return buffer.Bytes()
 }
