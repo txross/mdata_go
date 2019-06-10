@@ -20,6 +20,7 @@ package update
 import (
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 )
 
 type Update struct {
@@ -70,11 +71,7 @@ func (args *Update) Run() ([]byte, error) {
 	}
 
 	// Query batch transaction status link
-	status, query_err := commands.GetTransactionStatus(batchStatusResponse)
-
-	if query_err != nil {
-		return nil, query_err
-	}
+	status := commands.GetTransactionStatus(batchStatusResponse)
 
 	return []byte(status), nil
 }

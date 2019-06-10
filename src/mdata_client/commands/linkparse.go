@@ -55,7 +55,7 @@ func getStatus(link string) string {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Bad Response from REST Api ", resp.Status).Error()
+		return fmt.Errorf("Bad Response from REST Api %v", resp.Status).Error()
 	} else {
 		return queryStatus(resp)
 	}

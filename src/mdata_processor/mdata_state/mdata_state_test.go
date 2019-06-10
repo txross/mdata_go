@@ -14,7 +14,7 @@ var testState string = "ACTIVE"
 var testGtinAddress string = makeAddress(testGtin)
 var toDeleteGtin string = "555555555555"
 var toDeleteGtinAddress string = makeAddress(toDeleteGtin)
-var testProduct Product = _data.Product{
+var testProduct _data.Product = _data.Product{
 	Gtin:       testGtin,
 	Attributes: testAttributes,
 	State:      testState,
@@ -186,7 +186,7 @@ func TestDeleteProduct(t *testing.T) {
 
 		testProduct2 := _data.Product{
 			Gtin:       toDeleteGtin,
-			Attributes: Attributes{"uom": "cases"},
+			Attributes: _data.Attributes{"uom": "cases"},
 			State:      "INACTIVE",
 		}
 		testProductSlice[1] = &testProduct2

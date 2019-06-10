@@ -122,7 +122,8 @@ func (self *MdState) loadProducts(gtin string) (map[string]*_data.Product, error
 	data, ok := self.addressCache[address]
 	if ok {
 		if self.addressCache[address] != nil {
-			return _data.Deserialize(data), nil
+			products, _ := _data.Deserialize(data)
+			return products, nil
 		}
 		return make(map[string]*_data.Product), nil
 	}
@@ -132,7 +133,8 @@ func (self *MdState) loadProducts(gtin string) (map[string]*_data.Product, error
 	}
 	if len(string(results[address])) > 0 {
 		self.addressCache[address] = results[address]
-		return _data.Deserialize(results[address]), nil
+		products, _ := _data.Deserialize(data)
+		return products, nil
 	}
 	self.addressCache[address] = nil
 	products := make(map[string]*_data.Product)

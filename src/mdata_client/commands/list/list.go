@@ -23,7 +23,6 @@ import (
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
 	"github.com/tross-tyson/mdata_go/src/shared/data"
 	"os"
-	"strings"
 )
 
 type List struct {
@@ -63,12 +62,16 @@ func (args *List) Run() ([]byte, error) {
 		return nil, err
 	}
 
-	productMap := data.Deserialize(products)
+	productMap, mapping_err := data.Deserialize([]byte(products))
+
+	if mapping_err != nil {
+		return nil, mapping_err
+	}
 
 	response := data.GetProductMapJson(productMap)
 
 	fmt.Printf("Product Map\n")
 	fmt.Printf("{<gtin>: {<product data}>}\n")
 	os.Stdout.Write(response)
-	return resposne, nil
+	return response, nil
 }

@@ -71,11 +71,7 @@ func (args *Create) Run() ([]byte, error) {
 	}
 
 	// Query batch transaction status link
-	status, query_err := commands.GetTransactionStatus(batchStatusResponse)
-
-	if query_err != nil {
-		return nil, query_err
-	}
+	status := commands.GetTransactionStatus(batchStatusResponse)
 
 	return []byte(status), nil
 }
