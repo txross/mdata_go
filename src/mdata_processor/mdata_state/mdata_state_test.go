@@ -62,7 +62,10 @@ func TestGetProduct(t *testing.T) {
 			testProductSlice[0] = &testProduct
 
 			fmt.Printf("Existing Product %v\n", testProductSlice[0])
-			fmt.Printf("Serialized Product %v\n", string(_data.Serialize(testProductSlice)))
+			seri := _data.Serialize(testProductSlice)
+			fmt.Printf("Serialized Product %v\n", string(seri))
+			deseri := _data.Deserialize(seri)
+			fmt.Printf("DESERIALIZED PRODUCTS: \n\t %v", deseri)
 
 			returnState[testGtinAddress] = _data.Serialize(testProductSlice)
 
