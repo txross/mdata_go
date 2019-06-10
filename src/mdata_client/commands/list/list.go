@@ -62,7 +62,7 @@ func (args *List) Run() ([]byte, error) {
 		return nil, err
 	}
 
-	productMap, _ := data.Deserialize([]byte(product))
+	productMap, _ := data.Deserialize([]byte(products))
 
 	response := data.GetProductMapJson(productMap)
 
