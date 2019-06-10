@@ -30,11 +30,13 @@ func GetParser(cmdsToRegister []commands.Command) *flags.Parser {
 
 	p := flags.NewNamedParser("mdata", flags.Default)
 
-	for _, cmd := range cmdsToRegister {
-		err := cmd.Register(p.Command)
-		if err != nil {
-			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
-			os.Exit(1)
+	if len(cmdsToRegister) > 0 {
+		for _, cmd := range cmdsToRegister {
+			err := cmd.Register(p.Command)
+			if err != nil {
+				logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
+				os.Exit(1)
+			}
 		}
 	}
 
