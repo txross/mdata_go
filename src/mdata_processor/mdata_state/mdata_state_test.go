@@ -2,6 +2,7 @@ package mdata_state
 
 import (
 	"errors"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	_data "github.com/tross-tyson/mdata_go/src/shared/data"
 	"testing"
@@ -60,7 +61,7 @@ func TestGetProduct(t *testing.T) {
 			testProductSlice := make([]*_data.Product, 1)
 			testProductSlice[0] = &testProduct
 
-			fmt.Println(testPRoductSlice)
+			fmt.Println(testProductSlice)
 			fmt.Println(string(_data.Serialize(testProductSlice)))
 
 			returnState[testGtinAddress] = _data.Serialize(testProductSlice)

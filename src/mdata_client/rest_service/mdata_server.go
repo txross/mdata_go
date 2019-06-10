@@ -1,8 +1,8 @@
 package rest_service
 
 import (
-	"github.com/jessevdk/go-flags"
 	"fmt"
+	"github.com/jessevdk/go-flags"
 	"net/http"
 	"os"
 	"regexp"
@@ -66,11 +66,11 @@ import (
 // }
 
 type CrudResponse struct {
-	Status string `json:"Status" sml:"Status" form:"Status" query:"Status"`
+	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
 	Product data.Product `json:"Product" sml:"Product" form:"Product" query:"Product"`
 }
 
-func runCmd(cmd_name string) (string, error){
+func runCmd(cmd_name string) (string, error) {
 	for _, cmd := range parser.Commands() {
 		if cmd.Name() == cmd_name {
 			response, err := cmd.Run()
@@ -85,8 +85,8 @@ func showProduct(c echo.Context) error {
 
 	//2 Supply arguments to parser
 	args := []string{
-		"show"
-		gtin
+		"show",
+		gtin,
 	}
 
 	_, err := p.ParseArgs(args)
@@ -94,7 +94,7 @@ func showProduct(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", err)
 	}
 
-	response, cmd_err :=  runCmd(p.Command.Active.Name)
+	response, cmd_err := runCmd(p.Command.Active.Name)
 	if cmd_err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
 	}
@@ -106,7 +106,7 @@ func listProduct(c echo.Context) error {
 
 	//2 Supply arguments to parser
 	args := []string{
-		"list"
+		"list",
 	}
 
 	_, err := p.ParseArgs(args)
@@ -114,7 +114,7 @@ func listProduct(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", err)
 	}
 
-	response, cmd_err :=  runCmd(p.Command.Active.Name)
+	response, cmd_err := runCmd(p.Command.Active.Name)
 	if cmd_err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
 	}
@@ -132,13 +132,13 @@ func createProduct(c echo.Context) error {
 
 	//2 Supply arguments to parser
 	args := []string{
-		"create"
-		p.Gtin
+		"create",
+		p.Gtin,
 	}
 
 	//3 Split attributes into arguments for the parser, append to args
 	attributes := p.Attributes.Serialize()
-	for _, key_value_pair := range strings.Split(string(attributes),",") {
+	for _, key_value_pair := range strings.Split(string(attributes), ",") {
 		key_value_pair = strings.Replace(key_value_pair, "=", ":")
 		args = append(args, "-a", key_value_pair)
 	}
@@ -148,7 +148,7 @@ func createProduct(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", err)
 	}
 
-	status, cmd_err :=  runCmd(p.Command.Active.Name)
+	status, cmd_err := runCmd(p.Command.Active.Name)
 	if cmd_err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
 	}
@@ -167,8 +167,8 @@ func deleteProduct(c echo.Context) error {
 
 	//2 Supply arguments to parser
 	args := []string{
-		"delete"
-		gtin
+		"delete",
+		gtin,
 	}
 
 	_, err := p.ParseArgs(args)
@@ -176,7 +176,7 @@ func deleteProduct(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", err)
 	}
 
-	status, cmd_err :=  runCmd(p.Command.Active.Name)
+	status, cmd_err := runCmd(p.Command.Active.Name)
 
 	if cmd_err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
@@ -185,7 +185,7 @@ func deleteProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, fmt.Sprintf(`{"Status": %v}`, status))
 }
 
-func updateProductAttributes(c echo.Context) error {	
+func updateProductAttributes(c echo.Context) error {
 	// Use this function to update state or attributes of existing product
 	// An update of attributes will overwrite existing attributes of the product
 
@@ -198,13 +198,13 @@ func updateProductAttributes(c echo.Context) error {
 
 	//2 Supply arguments to parser
 	args := []string{
-		"update"
-		p.Gtin
+		"update",
+		p.Gtin,
 	}
 
 	//3 Split attributes into arguments for the parser, append to args
 	attributes := p.Attributes.Serialize()
-	for _, key_value_pair := range strings.Split(string(attributes),",") {
+	for _, key_value_pair := range strings.Split(string(attributes), ",") {
 		key_value_pair = strings.Replace(key_value_pair, "=", ":")
 		args = append(args, "-a", key_value_pair)
 	}
@@ -214,7 +214,7 @@ func updateProductAttributes(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", err)
 	}
 
-	status, cmd_err :=  runCmd(p.Command.Active.Name)
+	status, cmd_err := runCmd(p.Command.Active.Name)
 	if cmd_err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
 	}
@@ -224,7 +224,7 @@ func updateProductAttributes(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func updateProductState(c echo.Context) error {	
+func updateProductState(c echo.Context) error {
 	// Use this function to update state or attributes of existing product
 	// An update of attributes will overwrite existing attributes of the product
 
@@ -237,9 +237,9 @@ func updateProductState(c echo.Context) error {
 
 	//2 Supply arguments to parser
 	args := []string{
-		"set"
-		p.Gtin
-		p.State
+		"set",
+		p.Gtin,
+		p.State,
 	}
 
 	_, err := p.ParseArgs(args)
@@ -247,7 +247,7 @@ func updateProductState(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", err)
 	}
 
-	status, cmd_err :=  runCmd(p.Command.Active.Name)
+	status, cmd_err := runCmd(p.Command.Active.Name)
 	if cmd_err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
 	}
@@ -264,12 +264,12 @@ func Run(port int) {
 
 	p := parser.GetParser()
 
-	e.GET("/products/:gtin", showProduct) // show specific product
-	e.GET("/products", listproduct) // list all products
-	e.POST("/products", createProduct) // create new product
+	e.GET("/products/:gtin", showProduct)                  // show specific product
+	e.GET("/products", listproduct)                        // list all products
+	e.POST("/products", createProduct)                     // create new product
 	e.PUT("/products/:gtin/attr", updateProductAttributes) // update existing product attributes or state
-	e.PUT("/products/:gtin/state", updateProductState) // update existing product attributes or state
-	e.DELETE("/products/:gtin", deleteProduct) // delete existing inactive product
+	e.PUT("/products/:gtin/state", updateProductState)     // update existing product attributes or state
+	e.DELETE("/products/:gtin", deleteProduct)             // delete existing inactive product
 
 	if port != 0 {
 		e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", port)))
