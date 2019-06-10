@@ -19,7 +19,7 @@ func TestGetParser(t *testing.T) {
 		outActiveCommand string
 	}{
 		"noCommands": {
-			inCommand:        []commands.Command{},
+			inCommand:        []commands.Command{nil},
 			inActiveCommand:  []string{"mdata"},
 			outActiveCommand: "mdata",
 		},
