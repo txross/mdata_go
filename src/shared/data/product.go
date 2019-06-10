@@ -80,7 +80,7 @@ type Product struct {
 func (p *Product) GetJson() []byte {
 	b, err := json.Marshal(p)
 	if err != nil {
-		fmt.Println("Error marshalling product json, %v", err)
+		fmt.Printf("Error marshalling product json, %v", err)
 		return nil
 	}
 	return b
@@ -89,7 +89,7 @@ func (p *Product) GetJson() []byte {
 func GetProductMapJson(productMap map[string]*Product) []byte {
 	b, err := json.Marshal(productMap)
 	if err != nil {
-		fmt.Println("Error marshalling product json, %v", err)
+		fmt.Printf("Error marshalling product json, %v", err)
 		return nil
 	}
 	return b

@@ -53,7 +53,7 @@ func (args *Create) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Create) Run() []byte, error {
+func (args *Create) Run() ([]byte, error) {
 	// Construct client
 	gtin := args.Args.Gtin
 	attributes := args.Attributes
@@ -63,7 +63,7 @@ func (args *Create) Run() []byte, error {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	batchStatusResponse, batchStatusErr := mdataClient.Create(gtin, attributes, wait)
 
 	if batchStatusErr != nil {
@@ -77,5 +77,5 @@ func (args *Create) Run() []byte, error {
 		return nil, query_err
 	}
 
-	return byte[](status), nil
+	return []byte(status), nil
 }

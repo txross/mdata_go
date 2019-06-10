@@ -76,5 +76,5 @@ func (args *Update) Run() ([]byte, error) {
 		return nil, query_err
 	}
 
-	return byte[](status), nil
+	return []byte(status), nil
 }

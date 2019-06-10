@@ -62,7 +62,7 @@ func (args *Set) Run() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	batchStatusResponse, batchStatusErr  := mdataClient.Set(gtin, state, wait)
+	batchStatusResponse, batchStatusErr := mdataClient.Set(gtin, state, wait)
 
 	if batchStatusErr != nil {
 		return nil, batchStatusErr
@@ -75,5 +75,5 @@ func (args *Set) Run() ([]byte, error) {
 		return nil, query_err
 	}
 
-	return byte[](status), nil
+	return []byte(status), nil
 }

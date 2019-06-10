@@ -18,12 +18,10 @@
 package show
 
 import (
-	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
 	"github.com/tross-tyson/mdata_go/src/shared/data"
 	"os"
-	"strings"
 )
 
 type Show struct {
@@ -66,9 +64,13 @@ func (args *Show) Run() ([]byte, error) {
 		return nil, err
 	}
 
-	productMap := data.Deserialize(products)
+	productMap, deserialize_err := data.Deserialize([]byte(products))
 
-	resposne := productMap[gtin].GetJson()
+	if deserialize_err != nil {
+		return nil, deserialize_err
+	}
+
+	response := productMap[gtin].GetJson()
 
 	os.Stdout.Write(response)
 	return response, nil

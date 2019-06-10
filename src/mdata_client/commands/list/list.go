@@ -18,12 +18,12 @@
 package list
 
 import (
-	"github.com/tross-tyson/mdata_go/src/shared/data"
 	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
-	"strings"
+	"github.com/tross-tyson/mdata_go/src/shared/data"
 	"os"
+	"strings"
 )
 
 type List struct {
@@ -50,7 +50,7 @@ func (args *List) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *List) Run() []byte, error {
+func (args *List) Run() ([]byte, error) {
 
 	//TODO: Check back here after List() has been defined in mdataClient
 	// Construct client
@@ -62,7 +62,7 @@ func (args *List) Run() []byte, error {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	productMap := data.Deserialize(products)
 
 	response := data.GetProductMapJson(productMap)

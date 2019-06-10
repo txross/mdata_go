@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -45,7 +46,7 @@ func getStatus(link string) string {
 	var validLinkPattern = regexp.MustCompile(`^http:\/\/.*$`)
 
 	if !validLinkPattern.MatchString(link) {
-		return fmt.Errorf("Malformed or missing link to batch transaction id").Error()
+		return errors.New("Malformed or missing link to batch transaction id").Error()
 	}
 
 	resp, err := http.Get(link)

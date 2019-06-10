@@ -18,15 +18,13 @@
 package mdata_state
 
 import (
-	"bytes"
 	"crypto/sha512"
 	"encoding/hex"
-	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/hyperledger/sawtooth-sdk-go/processor"
-	"github.com/tross-tyson/mdata_go/src/shared/data"
+	_data "github.com/tross-tyson/mdata_go/src/shared/data"
 )
 
 type context interface {
@@ -56,7 +54,7 @@ func NewMdState(context *processor.Context) *MdState {
 }
 
 // Define states to store
-func (self *MdState) GetProduct(gtin string) (*data.Product, error) {
+func (self *MdState) GetProduct(gtin string) (*_data.Product, error) {
 	products, err := self.loadProducts(gtin)
 	if err != nil {
 		return nil, err
@@ -68,7 +66,7 @@ func (self *MdState) GetProduct(gtin string) (*data.Product, error) {
 	return nil, nil
 }
 
-func (self *MdState) SetProduct(gtin string, product *data.Product) error {
+func (self *MdState) SetProduct(gtin string, product *_data.Product) error {
 	products, err := self.loadProducts(gtin)
 	if err != nil {
 		return err
@@ -92,24 +90,24 @@ func (self *MdState) DeleteProduct(gtin string) error {
 	}
 }
 
-func (self *MdState) storeProducts(gtin string, products map[string]*data.Product) error {
+func (self *MdState) storeProducts(gtin string, products map[string]*_data.Product) error {
 	address := makeAddress(gtin)
 
 	var gtins []string
 
-	//for each Gtin (key) in map[string]*data.Product
+	//for each Gtin (key) in map[string]*_data.Product
 	for gtin := range products {
 		//append gtin to gtins slice of string
 		gtins = append(gtins, gtin)
 	}
 	sort.Strings(gtins)
 
-	var p []*data.Product
+	var p []*_data.Product
 	for _, gtin := range gtins {
 		p = append(p, products[gtin])
 	}
 
-	data := data.Serialize(p)
+	data := _data.Serialize(p)
 
 	self.addressCache[address] = data
 
@@ -119,14 +117,14 @@ func (self *MdState) storeProducts(gtin string, products map[string]*data.Produc
 	return err
 }
 
-func (self *MdState) loadProducts(gtin string) (map[string]*data.Product, error) {
+func (self *MdState) loadProducts(gtin string) (map[string]*_data.Product, error) {
 	address := makeAddress(gtin)
 	data, ok := self.addressCache[address]
 	if ok {
 		if self.addressCache[address] != nil {
-			return data.Deserialize(data)
+			return _data.Deserialize(data), nil
 		}
-		return make(map[string]*data.Product), nil
+		return make(map[string]*_data.Product), nil
 	}
 	results, err := self.context.GetState([]string{address})
 	if err != nil {
@@ -134,10 +132,10 @@ func (self *MdState) loadProducts(gtin string) (map[string]*data.Product, error)
 	}
 	if len(string(results[address])) > 0 {
 		self.addressCache[address] = results[address]
-		return data.Deserialize(results[address])
+		return _data.Deserialize(results[address]), nil
 	}
 	self.addressCache[address] = nil
-	products := make(map[string]*data.Product)
+	products := make(map[string]*_data.Product)
 	return products, nil
 }
 
