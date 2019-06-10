@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	_data "github.com/tross-tyson/mdata_go/src/shared/data"
-	"reflect"
 	"testing"
 )
 

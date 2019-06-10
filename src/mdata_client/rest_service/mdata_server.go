@@ -66,7 +66,7 @@ import (
 var p *flags.Parser = parser.GetParser()
 
 type CrudResponse struct {
-	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
+	Status  []byte       `json:"Status" sml:"Status" form:"Status" query:"Status"`
 	Product data.Product `json:"Product" sml:"Product" form:"Product" query:"Product"`
 }
 
@@ -206,7 +206,7 @@ func updateProductAttributes(c echo.Context) error {
 	//3 Split attributes into arguments for the parser, append to args
 	attributes := product.Attributes.Serialize()
 	for _, key_value_pair := range strings.Split(string(attributes), ",") {
-		key_value_pair = strings.Replace(key_value_pair, "=", ":")
+		key_value_pair = strings.Replace(key_value_pair, "=", ":", 1)
 		args = append(args, "-a", key_value_pair)
 	}
 
@@ -264,7 +264,7 @@ func Run(port int) {
 	e.Use(middleware.CORS()) //for now open to all origins
 
 	e.GET("/products/:gtin", showProduct)                  // show specific product
-	e.GET("/products", listproduct)                        // list all products
+	e.GET("/products", listProduct)                        // list all products
 	e.POST("/products", createProduct)                     // create new product
 	e.PUT("/products/:gtin/attr", updateProductAttributes) // update existing product attributes or state
 	e.PUT("/products/:gtin/state", updateProductState)     // update existing product attributes or state
