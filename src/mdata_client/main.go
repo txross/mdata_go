@@ -133,7 +133,7 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port, parser)
 	} else {
-		runCommandLine(parser, commands)
+		runCommandLine(parser, Commands)
 	}
 
 }

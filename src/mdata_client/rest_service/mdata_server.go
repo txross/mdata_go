@@ -207,7 +207,7 @@ func updateProductState(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func Run(port int, parser *flags.Parser) {
+func Run(port uint, parser *flags.Parser) {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS()) //for now open to all origins
