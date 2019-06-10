@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/create"
@@ -9,7 +10,10 @@ import (
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/set"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/show"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/update"
+	"os"
 )
+
+var logger *logging.Logger = logging.Get()
 
 func Commands() []commands.Command {
 	return []commands.Command{
@@ -23,7 +27,6 @@ func Commands() []commands.Command {
 }
 
 func GetParser() *flags.Parser {
-	var opts Opts
 	p := flags.NewNamedParser("mdata", *flags.Default)
 
 	for _, cmd := range Commands() {
@@ -34,5 +37,5 @@ func GetParser() *flags.Parser {
 		}
 	}
 
-	return &p
+	return p
 }
