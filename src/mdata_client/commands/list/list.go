@@ -62,10 +62,8 @@ func (args *List) Run() ([]byte, error) {
 		return nil, err
 	}
 
-	productMap, mapping_err := data.Deserialize([]byte(products))
-
-	if mapping_err != nil {
-		return nil, mapping_err
+	for _, product := range products {
+		productMap, _ := data.Deserialize([]byte(product))
 	}
 
 	response := data.GetProductMapJson(productMap)
