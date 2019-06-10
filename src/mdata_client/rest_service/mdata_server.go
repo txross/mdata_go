@@ -12,57 +12,6 @@ import (
 	"github.com/tross-tyson/mdata_go/src/shared/data"
 )
 
-// type ProductState int
-
-// const (
-// 	INACTIVE     ProductState = 0
-// 	ACTIVE       ProductState = 1
-// 	DISCONTINUED ProductState = 2
-// )
-
-// func (ps ProductState) String() string {
-// 	switch ps {
-// 	case INACTIVE:
-// 		return "INACTIVE"
-// 	case ACTIVE:
-// 		return "ACTIVE"
-// 	case DISCONTINUED:
-// 		return "DISCONTINUED"
-// 	default:
-// 		return "UNKNOWN"
-// 	}
-// }
-
-// func convertToState(s string) (ProductState, error) {
-// 	switch strings.ToUpper(s) {
-// 	case "INACTIVE":
-// 		return INACTIVE, nil
-// 	case "ACTIVE":
-// 		return ACTIVE, nil
-// 	case "DISCONTINUED":
-// 		return DISCONTINUED, nil
-// 	default:
-// 		return INACTIVE, fmt.Errorf("Unknown product state string: %s", s)
-
-// 	}
-// }
-
-// type ProductStateUpdate struct {
-// 	State string `json:"new_state" xml:"new_state" form:"new_state" query:"new_state"`
-// }
-
-// func (p Product) isValid() bool {
-// 	gtin := p.Gtin
-// 	pattern := regexp.MustCompile(`^\d{14}$`)
-// 	if !pattern.MatchString(gtin) {
-// 		return false
-// 	}
-
-// 	//attributes are all optional, so no need to validate
-// 	_, err := convertToState(p.State)
-// 	return err == nil
-// }
-
 var p *flags.Parser = parser.GetParser()
 
 type CrudResponse struct {
@@ -258,7 +207,7 @@ func updateProductState(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func Run(port int) {
+func Run(port int, parser *flags.Parser) {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS()) //for now open to all origins
