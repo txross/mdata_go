@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	flags "github.com/jessevdk/go-flags"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/parser"
@@ -62,18 +63,21 @@ import (
 // 	return err == nil
 // }
 
+const p *flags.Parser = parser.GetParser()
+
 type CrudResponse struct {
 	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
 	Product data.Product `json:"Product" sml:"Product" form:"Product" query:"Product"`
 }
 
-func runCmd(cmd_name string) (string, error) {
+func runCmd(cmd_name string) ([]byte, error) {
 	for _, cmd := range parser.Commands() {
 		if cmd.Name() == cmd_name {
 			response, err := cmd.Run()
 			return response, err
 		}
 	}
+	return nil, nil
 }
 
 func showProduct(c echo.Context) error {
@@ -120,23 +124,23 @@ func listProduct(c echo.Context) error {
 }
 
 func createProduct(c echo.Context) error {
-	p := &data.Product{}
+	product := &data.Product{}
 
 	//1 Get data
-	if err := c.Bind(p); err != nil {
+	if err := c.Bind(product); err != nil {
 		return err
 	}
 
 	//2 Supply arguments to parser
 	args := []string{
 		"create",
-		p.Gtin,
+		product.Gtin,
 	}
 
 	//3 Split attributes into arguments for the parser, append to args
-	attributes := p.Attributes.Serialize()
+	attributes := product.Attributes.Serialize()
 	for _, key_value_pair := range strings.Split(string(attributes), ",") {
-		key_value_pair = strings.Replace(key_value_pair, "=", ":")
+		key_value_pair = strings.Replace(key_value_pair, "=", ":", 1)
 		args = append(args, "-a", key_value_pair)
 	}
 
@@ -150,7 +154,7 @@ func createProduct(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
 	}
 
-	response := &CrudResponse{Status: status, Product: *p}
+	response := &CrudResponse{Status: status, Product: *product}
 
 	return c.JSON(http.StatusOK, response)
 }
@@ -186,21 +190,21 @@ func updateProductAttributes(c echo.Context) error {
 	// Use this function to update state or attributes of existing product
 	// An update of attributes will overwrite existing attributes of the product
 
-	p := &data.Product{}
+	product := &data.Product{}
 
 	//1 Get data
-	if err := c.Bind(p); err != nil {
+	if err := c.Bind(product); err != nil {
 		return err
 	}
 
 	//2 Supply arguments to parser
 	args := []string{
 		"update",
-		p.Gtin,
+		product.Gtin,
 	}
 
 	//3 Split attributes into arguments for the parser, append to args
-	attributes := p.Attributes.Serialize()
+	attributes := product.Attributes.Serialize()
 	for _, key_value_pair := range strings.Split(string(attributes), ",") {
 		key_value_pair = strings.Replace(key_value_pair, "=", ":")
 		args = append(args, "-a", key_value_pair)
@@ -216,7 +220,7 @@ func updateProductAttributes(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
 	}
 
-	response := &CrudResponse{Status: status, Product: *p}
+	response := &CrudResponse{Status: status, Product: *product}
 
 	return c.JSON(http.StatusOK, response)
 }
@@ -225,18 +229,18 @@ func updateProductState(c echo.Context) error {
 	// Use this function to update state or attributes of existing product
 	// An update of attributes will overwrite existing attributes of the product
 
-	p := &data.Product{}
+	product := &data.Product{}
 
 	//1 Get data
-	if err := c.Bind(p); err != nil {
+	if err := c.Bind(product); err != nil {
 		return err
 	}
 
 	//2 Supply arguments to parser
 	args := []string{
 		"set",
-		p.Gtin,
-		p.State,
+		product.Gtin,
+		product.State,
 	}
 
 	_, err := p.ParseArgs(args)
@@ -249,7 +253,7 @@ func updateProductState(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error processing request, %v", cmd_err)
 	}
 
-	response := &CrudResponse{Status: status, Product: *p}
+	response := &CrudResponse{Status: status, Product: *product}
 
 	return c.JSON(http.StatusOK, response)
 }
@@ -258,8 +262,6 @@ func Run(port int) {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS()) //for now open to all origins
-
-	p := parser.GetParser()
 
 	e.GET("/products/:gtin", showProduct)                  // show specific product
 	e.GET("/products", listproduct)                        // list all products
