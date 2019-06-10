@@ -1,7 +1,6 @@
 package parser
 
 import (
-	flags "github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/create"
@@ -17,13 +16,11 @@ func TestGetParser(t *testing.T) {
 	tests := map[string]struct {
 		inCommand        []commands.Command
 		inActiveCommand  []string
-		outParser        *flags.Parser
 		outActiveCommand string
 	}{
 		"oneCommand": {
 			inCommand:        []commands.Command{&create.Create{}},
 			inActiveCommand:  []string{"create", "12345678901234"},
-			outParser:        flags.NewNamedParser("mdata", flags.Default),
 			outActiveCommand: "create",
 		},
 		"multipleCommands": {
@@ -34,7 +31,6 @@ func TestGetParser(t *testing.T) {
 				&show.Show{},
 				&list.List{}},
 			inActiveCommand:  []string{"list"},
-			outParser:        flags.NewNamedParser("mdata", flags.Default),
 			outActiveCommand: "list",
 		},
 	}
@@ -44,9 +40,6 @@ func TestGetParser(t *testing.T) {
 
 		parser := GetParser(test.inCommand)
 		parser.ParseArgs(test.inActiveCommand)
-
-		// Test commands registered to parser
-		assert.Equal(t, test.outParser, parser)
 
 		// Test active command
 		assert.Equal(t, test.outActiveCommand, parser.Active.Name)
