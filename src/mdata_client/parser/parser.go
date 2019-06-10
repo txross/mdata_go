@@ -27,7 +27,8 @@ func Commands() []commands.Command {
 }
 
 func GetParser() *flags.Parser {
-	p := flags.NewNamedParser("mdata", *flags.Default)
+
+	p := flags.NewNamedParser("mdata", flags.Default)
 
 	for _, cmd := range Commands() {
 		err := cmd.Register(p.Command)

@@ -60,6 +60,9 @@ func TestGetProduct(t *testing.T) {
 			testProductSlice := make([]*_data.Product, 1)
 			testProductSlice[0] = &testProduct
 
+			fmt.Println(testPRoductSlice)
+			fmt.Println(string(_data.Serialize(testProductSlice)))
+
 			returnState[testGtinAddress] = _data.Serialize(testProductSlice)
 			testContext.On("GetState", []string{testGtinAddress}).Return(
 				returnState,
