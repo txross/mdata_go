@@ -1,6 +1,7 @@
 package parser
 
 import (
+	flags "github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/create"
@@ -54,6 +55,6 @@ func TestGetParser(t *testing.T) {
 		assert.Equal(t, test.outParser, parser)
 
 		// Test active command
-		assert.Equal(t, outActiveCommand, parser.Active.Name)
+		assert.Equal(t, test.outActiveCommand, parser.Active.Name)
 	}
 }
