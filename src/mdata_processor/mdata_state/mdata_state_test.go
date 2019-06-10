@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	_data "github.com/tross-tyson/mdata_go/src/shared/data"
+	"reflect"
 	"testing"
 )
 
@@ -61,10 +62,13 @@ func TestGetProduct(t *testing.T) {
 			testProductSlice := make([]*_data.Product, 1)
 			testProductSlice[0] = &testProduct
 
-			fmt.Println(testProductSlice)
-			fmt.Println(string(_data.Serialize(testProductSlice)))
+			fmt.Printf("Existing Product %v\n", testProductSlice[0])
+			fmt.Printf("Serialized Product %v\n", string(_data.Serialize(testProductSlice)))
 
 			returnState[testGtinAddress] = _data.Serialize(testProductSlice)
+
+			fmt.Printf("Return State %v\n", returnState[testGtinAddress])
+
 			testContext.On("GetState", []string{testGtinAddress}).Return(
 				returnState,
 				nil,

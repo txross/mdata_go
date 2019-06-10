@@ -2,16 +2,13 @@ package rest_service
 
 import (
 	"fmt"
-	"github.com/jessevdk/go-flags"
 	"net/http"
-	"os"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/parser"
+	"github.com/tross-tyson/mdata_go/src/shared/data"
 )
 
 // type ProductState int
