@@ -48,7 +48,7 @@ func TestGetParser(t *testing.T) {
 		t.Logf("Running test case: %s", name)
 
 		parser := GetParser(test.inCommand)
-		args := parser.ParseArgs(test.inActiveCommand)
+		args, _ := parser.ParseArgs(test.inActiveCommand)
 
 		// Test commands registered to parser
 		assert.Equal(t, test.outParser, parser)
