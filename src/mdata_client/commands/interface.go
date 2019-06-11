@@ -8,5 +8,5 @@ type Command interface {
 	Name() string
 	KeyfilePassed() string
 	UrlPassed() string
-	Run() ([]byte, error)
+	Run() (string, error)
 }

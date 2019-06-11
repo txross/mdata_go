@@ -51,7 +51,7 @@ func (args *Show) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Show) Run() ([]byte, error) {
+func (args *Show) Run() (string, error) {
 	//TODO: Check back here after mdataClient.Show() has been defined
 	// Construct client
 	gtin := args.Args.Gtin
@@ -72,6 +72,5 @@ func (args *Show) Run() ([]byte, error) {
 
 	response := productMap[gtin].GetJson()
 
-	os.Stdout.Write(response)
-	return response, nil
+	return string(response), nil
 }
