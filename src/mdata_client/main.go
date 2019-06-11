@@ -65,8 +65,9 @@ func runCommandLine(cli_args []string) {
 		os.Exit(2)
 	}
 
+	name := CliServiceParser.Command.Active.Name
 	for _, cmd := range CmdsSlice {
-		if cmd.Name() == CliServiceParser.Command.Active.Name {
+		if cmd.Name() == name {
 			response, err := cmd.Run()
 			if err != nil {
 				fmt.Println("Error: ", err)
