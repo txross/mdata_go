@@ -21,7 +21,6 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
 	"github.com/tross-tyson/mdata_go/src/shared/data"
-	"os"
 )
 
 type Show struct {
@@ -57,17 +56,17 @@ func (args *Show) Run() (string, error) {
 	gtin := args.Args.Gtin
 	mdataClient, err := client.GetClient(args, false)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	products, err := mdataClient.Show(gtin)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	productMap, deserialize_err := data.Deserialize([]byte(products))
 
 	if deserialize_err != nil {
-		return nil, deserialize_err
+		return "", deserialize_err
 	}
 
 	response := productMap[gtin].GetJson()

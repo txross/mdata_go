@@ -61,12 +61,12 @@ func (args *Set) Run() (string, error) {
 
 	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	batchStatusResponse, batchStatusErr := mdataClient.Set(gtin, state, wait)
 
 	if batchStatusErr != nil {
-		return nil, batchStatusErr
+		return "", batchStatusErr
 	}
 
 	// Query batch transaction status link
