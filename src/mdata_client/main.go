@@ -125,6 +125,9 @@ func main() {
 	}
 
 	remaining, err := parser.Parse()
+
+	fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v", remaining)
+
 	if e, ok := err.(*flags.Error); ok {
 		if e.Type == flags.ErrHelp {
 			return
