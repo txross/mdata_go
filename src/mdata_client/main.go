@@ -43,7 +43,7 @@ func init() {
 	}
 }
 
-func runCommandLine(parser *flags.Parser) {
+func runCommandLine(parser *flags.Parser, remaining []string) {
 
 	Commands := []commands.Command{
 		&create.Create{},
@@ -61,6 +61,8 @@ func runCommandLine(parser *flags.Parser) {
 			os.Exit(1)
 		}
 	}
+
+	_, err := parser.ParseArgs(remaining)
 
 	// If a sub-command was passed, run it
 	if parser.Command.Active == nil {
@@ -124,16 +126,11 @@ func main() {
 		}
 	}
 
-	if len(remaining) > 0 {
-		fmt.Println("Error: Unrecognized arguments passed: ", remaining)
-		os.Exit(2)
-	}
-
 	if opts.Server {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port)
 	} else {
-		runCommandLine(parser)
+		runCommandLine(parser, remaining)
 	}
 
 }
