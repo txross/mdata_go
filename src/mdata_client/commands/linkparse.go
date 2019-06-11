@@ -13,19 +13,20 @@ type Response struct {
 	Link string `json:"link"`
 }
 
-type BatchStatusData struct {
-	Id                  string   `json:"id"`
-	InvalidTransactions []string `json:"invalid_transactions"`
-	Status              string   `json:"status"`
-}
+// type BatchStatusData struct {
+// 	Id                  string   `json:"id"`
+// 	InvalidTransactions []string `json:"invalid_transactions"`
+// 	Status              string   `json:"status"`
+// }
 
-type BatchStatusResponse struct {
-	Data []BatchStatusData `json:"data"`
-	Link string            `json:"link"`
-}
+// type BatchStatusResponse struct {
+// 	Data []BatchStatusData `json:"data"`
+// 	Link string            `json:"link"`
+// }
 
 func GetTransactionStatus(txn string) string {
-	status := getStatus(getLink(txn))
+	link := getLink(txn)
+	status := getTxnBatchIdLink(link)
 	return status
 }
 
@@ -41,7 +42,7 @@ func getLink(txn string) string {
 	return response.Link
 }
 
-func getStatus(link string) string {
+func getTxnBatchIdLink(link string) string {
 
 	var validLinkPattern = regexp.MustCompile(`^http:\/\/.*$`)
 
@@ -50,6 +51,7 @@ func getStatus(link string) string {
 	}
 
 	resp, err := http.Get(link)
+
 	if err != nil {
 		return err.Error()
 	}
@@ -57,26 +59,13 @@ func getStatus(link string) string {
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("Bad Response from REST Api %v", resp.Status).Error()
 	} else {
-		return queryStatus(resp)
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err.Error()
+		}
+
+		return string(body)
 	}
 
-}
-
-func queryStatus(resp *http.Response) string {
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err.Error()
-	}
-
-	response := BatchStatusResponse{}
-	err = json.Unmarshal(body, &response)
-
-	if err != nil {
-		return err.Error()
-	}
-
-	return string(response)
 }
