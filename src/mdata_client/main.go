@@ -39,16 +39,16 @@ func init() {
 	}
 }
 
-func runCommandLine(cli_parser *flags.Parser, cli_args []string) {
+func runCommandLine(cli_parser *flags.Parser) {
 
-	_, err := cli_parser.ParseArgs(cli_args)
+	//_, err := cli_parser.ParseArgs(cli_args)
 
 	fmt.Printf("ALL COMMAND LINE ARGUMENTS: \n\t%v", cli_parser.Command.Active)
 
-	if err != nil {
-		logger.Errorf("Error parsing commands %v: %v", cli_args, err)
-		os.Exit(1)
-	}
+	// if err != nil {
+	// 	logger.Errorf("Error parsing commands %v: %v", cli_args, err)
+	// 	os.Exit(1)
+	// }
 
 	// If a sub-command was passed, run it
 	if cli_parser.Command.Active == nil {
@@ -97,9 +97,23 @@ func main() {
 
 	CliServiceParser.AddGroup("d", "default", &opts)
 
+	or _, cmd := range CmdsSlice {
+		err := cmd.Register(CliServiceParser.Command)
+		if err != nil {
+			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
+			os.Exit(1)
+		}
+	}
+
 	remaining, err := CliServiceParser.ParseArgs(arguments)
 
 	fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
+	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", arguments)
+
+	//remaining, err := cli_parser.Parse()
+
+	fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v\n", remaining)
+	fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v\n", err)
 
 	// Set verbosity
 	switch len(opts.Verbose) {
@@ -111,12 +125,7 @@ func main() {
 		logger.SetLevel(logging.WARN)
 	}
 
-	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", arguments)
-
-	//remaining, err := cli_parser.Parse()
-
-	fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v\n", remaining)
-	fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v\n", err)
+	
 
 	if e, ok := err.(*flags.Error); ok {
 		if e.Type == flags.ErrHelp {
@@ -130,13 +139,6 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port)
 	} else {
-		for _, cmd := range CmdsSlice {
-			err := cmd.Register(CliServiceParser.Command)
-			if err != nil {
-				logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
-				os.Exit(1)
-			}
-		}
 		runCommandLine(CliServiceParser, remaining)
 	}
 
