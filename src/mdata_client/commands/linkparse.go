@@ -62,7 +62,7 @@ func getStatus(link string) string {
 
 }
 
-func queryStatus(resp *http.Response) *BatchStatusResponse {
+func queryStatus(resp *http.Response) string {
 
 	defer resp.Body.Close()
 
@@ -78,5 +78,5 @@ func queryStatus(resp *http.Response) *BatchStatusResponse {
 		return err.Error()
 	}
 
-	return response
+	return string(response)
 }
