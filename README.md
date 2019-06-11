@@ -31,25 +31,8 @@ Please read and review the RFC located [here](docs/RFC.md).
 
 Please see [Packaging As A Service](docs/PackageAsService.md)
 
-# Usage
-**List** available gtins
-`mdata list`
-
-**Query** for specific gtin, display key/value pair attributes
-`mdata show <gtin>`
-
-**Create** new product, provide optional attributes
-`mdata create <gtin> [key:value]`
-
-**Update** existing product, provide new attribute(s)
-`mdata update <gtin> <key:value>` 
-
-**Delete** existing product; requires a product in state INACTIVE
-`mdata delete <gtin>`
-
-**Set** state of existing product
-`mdata set <gtin> <ACTIVE|INACTIVE|DISCONTINUED>`
-
+# Client Usage
+Please see [Usage](docs/Usage.md)
 ---
 
 # Contributing: Development Requirements
