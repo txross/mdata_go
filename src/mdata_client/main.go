@@ -64,6 +64,8 @@ func runCommandLine(parser *flags.Parser, remaining []string) {
 
 	_, err := parser.ParseArgs(remaining)
 
+	fmt.Printf("ALL COMMAND LINE ARGUMENTS: \n\t%v", parser.Command.Active)
+
 	if err != nil {
 		logger.Errorf("Error parsing commands %v: %v", remaining, err)
 		os.Exit(1)
