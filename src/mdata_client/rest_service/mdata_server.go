@@ -11,10 +11,11 @@ import (
 	"github.com/labstack/echo/middleware"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/parser"
 	"github.com/tross-tyson/mdata_go/src/shared/data"
-	"os"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 )
 
 var logger *logging.Logger = logging.Get()
+var CmdsSlice []commands.Command := parser.Commands()
 
 type CrudResponse struct {
 	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
@@ -23,11 +24,9 @@ type CrudResponse struct {
 
 func ParseRequestArgs(args []string) (string, error) {
 
-	Commands := parser.Commands()
+	var RestServiceParser *flags.Parser = parser.GetParser(CmdsSlice)
 
-	var RestServiceParser *flags.Parser = parser.GetParser(Commands)
-
-	for _, cmd := range Commands {
+	for _, cmd := range CmdsSlice {
 		err := cmd.Register(RestServiceParser.Command)
 		if err != nil {
 			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
@@ -42,7 +41,7 @@ func ParseRequestArgs(args []string) (string, error) {
 
 	cmd_name := RestServiceParser.Command.Active.Name
 
-	for _, cmd := range Commands {
+	for _, cmd := range CmdsSlice {
 		if cmd.Name() == cmd_name {
 			response, err := cmd.Run()
 			return response, err
