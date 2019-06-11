@@ -124,10 +124,12 @@ func main() {
 		logger.SetLevel(logging.WARN)
 	}
 
+	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", os.Args)
+
 	remaining, err := cli_parser.Parse()
 
-	fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v", remaining)
-	fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v", err)
+	fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v\n", remaining)
+	fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v\n", err)
 
 	if e, ok := err.(*flags.Error); ok {
 		if e.Type == flags.ErrHelp {
