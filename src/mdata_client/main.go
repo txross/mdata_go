@@ -111,8 +111,8 @@ func main() {
 	}
 
 	var opts Opts
-	parser := flags.NewParser(&opts, flags.Default)
-	parser.Command.Name = "mdata"
+	cli_parser := flags.NewParser(&opts, flags.Default)
+	cli_parser.Command.Name = "mdata"
 
 	// Set verbosity
 	switch len(opts.Verbose) {
@@ -124,7 +124,7 @@ func main() {
 		logger.SetLevel(logging.WARN)
 	}
 
-	remaining, err := parser.Parse()
+	remaining, err := cli_parser.Parse()
 
 	fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v", remaining)
 
@@ -140,7 +140,7 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port)
 	} else {
-		runCommandLine(parser, remaining)
+		runCommandLine(cli_parser, remaining)
 	}
 
 }
