@@ -4,11 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/create"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/delete"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/list"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/set"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/show"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/update"
 	"testing"
 )
 
@@ -25,10 +21,6 @@ func TestGetParser(t *testing.T) {
 		},
 		"multipleCommands": {
 			inCommand: []commands.Command{&create.Create{},
-				&delete.Delete{},
-				&update.Update{},
-				&set.Set{},
-				&show.Show{},
 				&list.List{}},
 			inActiveCommand:  []string{"list"},
 			outActiveCommand: "list",
