@@ -18,14 +18,13 @@
 package mdata_state
 
 import (
-	"bytes"
 	"crypto/sha512"
 	"encoding/hex"
-	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/hyperledger/sawtooth-sdk-go/processor"
+	_data "github.com/tross-tyson/mdata_go/src/shared/data"
 )
 
 type context interface {
@@ -39,40 +38,6 @@ All data under a namespace prefix follows a consistent address and data encoding
 by the transaction family which defines the namespace
 */
 var Namespace = hexdigest("mdata")[:6]
-
-type Attributes map[string]interface{}
-
-func (self Attributes) serialize() []byte {
-	var b bytes.Buffer
-	var i int = 0
-	for k, v := range self {
-		b.WriteString(fmt.Sprintf("%v=%v", k, v))
-		i += 1
-		if i < len(self) {
-			b.WriteString(",")
-		}
-	}
-	return b.Bytes()
-}
-
-func DeserializeAttributes(a []string) Attributes {
-	A := Attributes{}
-	for _, str := range a {
-		if str != "" {
-			parts := strings.Split(str, "=")
-			k, v := parts[0], parts[1]
-			A[k] = v
-		}
-	}
-
-	return A
-}
-
-type Product struct {
-	Gtin       string
-	Attributes Attributes
-	State      string
-}
 
 // MdState handles addressing, serialization, deserialization,
 // and holding an addressCache of data at the address.
@@ -89,7 +54,7 @@ func NewMdState(context *processor.Context) *MdState {
 }
 
 // Define states to store
-func (self *MdState) GetProduct(gtin string) (*Product, error) {
+func (self *MdState) GetProduct(gtin string) (*_data.Product, error) {
 	products, err := self.loadProducts(gtin)
 	if err != nil {
 		return nil, err
@@ -101,7 +66,7 @@ func (self *MdState) GetProduct(gtin string) (*Product, error) {
 	return nil, nil
 }
 
-func (self *MdState) SetProduct(gtin string, product *Product) error {
+func (self *MdState) SetProduct(gtin string, product *_data.Product) error {
 	products, err := self.loadProducts(gtin)
 	if err != nil {
 		return err
@@ -125,24 +90,24 @@ func (self *MdState) DeleteProduct(gtin string) error {
 	}
 }
 
-func (self *MdState) storeProducts(gtin string, products map[string]*Product) error {
+func (self *MdState) storeProducts(gtin string, products map[string]*_data.Product) error {
 	address := makeAddress(gtin)
 
 	var gtins []string
 
-	//for each Gtin (key) in map[string]*Product
+	//for each Gtin (key) in map[string]*_data.Product
 	for gtin := range products {
 		//append gtin to gtins slice of string
 		gtins = append(gtins, gtin)
 	}
 	sort.Strings(gtins)
 
-	var p []*Product
+	var p []*_data.Product
 	for _, gtin := range gtins {
 		p = append(p, products[gtin])
 	}
 
-	data := serialize(p)
+	data := _data.Serialize(p)
 
 	self.addressCache[address] = data
 
@@ -152,14 +117,14 @@ func (self *MdState) storeProducts(gtin string, products map[string]*Product) er
 	return err
 }
 
-func (self *MdState) loadProducts(gtin string) (map[string]*Product, error) {
+func (self *MdState) loadProducts(gtin string) (map[string]*_data.Product, error) {
 	address := makeAddress(gtin)
 	data, ok := self.addressCache[address]
 	if ok {
 		if self.addressCache[address] != nil {
-			return deserialize(data)
+			return _data.Deserialize(data)
 		}
-		return make(map[string]*Product), nil
+		return make(map[string]*_data.Product), nil
 	}
 	results, err := self.context.GetState([]string{address})
 	if err != nil {
@@ -167,10 +132,10 @@ func (self *MdState) loadProducts(gtin string) (map[string]*Product, error) {
 	}
 	if len(string(results[address])) > 0 {
 		self.addressCache[address] = results[address]
-		return deserialize(results[address])
+		return _data.Deserialize(results[address])
 	}
 	self.addressCache[address] = nil
-	products := make(map[string]*Product)
+	products := make(map[string]*_data.Product)
 	return products, nil
 }
 
@@ -179,43 +144,6 @@ func (self *MdState) deleteProducts(gtin string) error {
 
 	_, err := self.context.DeleteState([]string{address})
 	return err
-}
-
-func deserialize(data []byte) (map[string]*Product, error) {
-	products := make(map[string]*Product)
-	for _, str := range strings.Split(string(data), "|") {
-		parts := strings.Split(string(str), ",")
-		if len(parts) < 3 { //Product must have at least three serialized attributes (even if Product.Attributes is empty)
-			return nil, &processor.InternalError{
-				Msg: fmt.Sprintf("Malformed product data: '%v'", string(data))}
-		}
-
-		attrs := parts[1 : len(parts)-1]
-
-		product := &Product{
-			Gtin:       parts[0],
-			Attributes: DeserializeAttributes(attrs),
-			State:      parts[len(parts)-1],
-		}
-		products[parts[0]] = product
-	}
-	return products, nil
-}
-
-func serialize(products []*Product) []byte {
-	var buffer bytes.Buffer
-	for i, product := range products {
-		//00001234567890,uom=cases,weight=200,ACTIVE|
-		buffer.WriteString(product.Gtin)
-		buffer.WriteString(",")
-		buffer.WriteString(string(product.Attributes.serialize()))
-		buffer.WriteString(",")
-		buffer.WriteString(product.State)
-		if i+1 != len(products) {
-			buffer.WriteString("|")
-		}
-	}
-	return buffer.Bytes()
 }
 
 func makeAddress(gtin string) string {

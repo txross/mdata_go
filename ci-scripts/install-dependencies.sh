@@ -23,7 +23,9 @@ go get -u google.golang.org/grpc \
         github.com/jessevdk/go-flags \
         github.com/stretchr/testify/mock \
         github.com/btcsuite/btcd/btcec \
-        gopkg.in/yaml.v2
+        gopkg.in/yaml.v2 \
+        github.com/labstack/echo \
+	github.com/labstack/echo/middleware
 
 go install github.com/golang/mock/mockgen
 

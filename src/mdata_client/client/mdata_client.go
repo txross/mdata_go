@@ -172,48 +172,52 @@ func (mdataClient MdataClient) Set(
 	return mdataClient.sendTransaction(c, wait)
 }
 
-func (mdataClient MdataClient) List() ([]string, error) {
+func (mdataClient MdataClient) List() ([]byte, error) {
 
 	// API to call
 	apiSuffix := fmt.Sprintf("%s?address=%s",
 		constants.STATE_API, mdataClient.getPrefix())
 	response, err := mdataClient.sendRequest(apiSuffix, []byte{}, "", "")
 	if err != nil {
-		return []string{}, err
+		return []byte{}, err
 	}
 
-	var toReturn []string
+	var toReturn bytes2.Buffer
 
 	responseMap := make(map[interface{}]interface{})
 	err = yaml.Unmarshal([]byte(response), &responseMap)
 	if err != nil {
-		return []string{},
+		return nil,
 			fmt.Errorf("Error reading response: %v", err)
 	}
 	encodedEntries := responseMap["data"].([]interface{})
 
-	for _, entry := range encodedEntries {
+	for index, entry := range encodedEntries {
 		entryData, ok := entry.(map[interface{}]interface{})
 		if !ok {
-			return []string{},
+			return nil,
 				errors.New("Error reading entry data")
 		}
 
 		stringData, ok := entryData["data"].(string)
 		if !ok {
-			return []string{},
+			return nil,
 				errors.New("Error reading string data")
 		}
 
 		decodedBytes, err := base64.StdEncoding.DecodeString(stringData)
 		if err != nil {
-			return []string{},
+			return nil,
 				fmt.Errorf("Error decoding: %v", err)
 		}
 
-		toReturn = append(toReturn, string(decodedBytes))
+		toReturn.Write(decodedBytes)
+		if index < len(encodedEntries)-1 {
+			toReturn.WriteString("|")
+		}
 	}
-	return toReturn, nil
+
+	return toReturn.Bytes(), nil
 }
 
 func (mdataClient MdataClient) Show(gtin string) (string, error) {

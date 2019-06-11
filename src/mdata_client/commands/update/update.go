@@ -20,6 +20,7 @@ package update
 import (
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 )
 
 type Update struct {
@@ -52,7 +53,7 @@ func (args *Update) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Update) Run() error {
+func (args *Update) Run() (string, error) {
 	// Construct client
 	gtin := args.Args.Gtin
 	attributes := args.Attributes
@@ -60,8 +61,17 @@ func (args *Update) Run() error {
 
 	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
-		return err
+		return "", err
 	}
-	_, err = mdataClient.Update(gtin, attributes, wait)
-	return err
+
+	batchStatusResponse, batchStatusErr := mdataClient.Update(gtin, attributes, wait)
+
+	if batchStatusErr != nil {
+		return "", batchStatusErr
+	}
+
+	// Query batch transaction status link
+	status := commands.GetTransactionStatus(batchStatusResponse)
+
+	return status, nil
 }

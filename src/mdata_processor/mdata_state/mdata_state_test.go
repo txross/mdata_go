@@ -3,22 +3,23 @@ package mdata_state
 import (
 	"errors"
 	"github.com/stretchr/testify/assert"
+	_data "github.com/tross-tyson/mdata_go/src/shared/data"
 	"testing"
 )
 
 var testGtin string = "01234567891234"
-var testAttributes Attributes = Attributes{"uom": "cases"}
-var testSetNewAttributes Attributes = Attributes{"uom": "lbs", "weight": "300"}
+var testAttributes _data.Attributes = _data.Attributes{"uom": "cases"}
+var testSetNewAttributes _data.Attributes = _data.Attributes{"uom": "lbs", "weight": "300"}
 var testState string = "ACTIVE"
 var testGtinAddress string = makeAddress(testGtin)
 var toDeleteGtin string = "555555555555"
 var toDeleteGtinAddress string = makeAddress(toDeleteGtin)
-var testProduct Product = Product{
+var testProduct _data.Product = _data.Product{
 	Gtin:       testGtin,
 	Attributes: testAttributes,
 	State:      testState,
 }
-var testSetNewProduct Product = Product{
+var testSetNewProduct _data.Product = _data.Product{
 	Gtin:       testGtin,
 	Attributes: testSetNewAttributes,
 	State:      testState,
@@ -29,7 +30,7 @@ func TestGetProduct(t *testing.T) {
 
 	tests := map[string]struct {
 		gtin       string
-		outProduct *Product
+		outProduct *_data.Product
 		err        error
 	}{
 		"error": {
@@ -56,10 +57,10 @@ func TestGetProduct(t *testing.T) {
 
 		if name == "existingProduct" {
 			returnState := make(map[string][]byte)
-			testProductSlice := make([]*Product, 1)
-			testProductSlice[0] = &testProduct
+			testProductSlice := []*_data.Product{&testProduct}
 
-			returnState[testGtinAddress] = serialize(testProductSlice)
+			returnState[testGtinAddress] = _data.Serialize(testProductSlice)
+
 			testContext.On("GetState", []string{testGtinAddress}).Return(
 				returnState,
 				nil,
@@ -96,7 +97,7 @@ func TestSetProduct(t *testing.T) {
 
 	tests := map[string]struct {
 		gtin      string
-		inProduct *Product
+		inProduct *_data.Product
 		err       error
 	}{
 		"newProduct": {
@@ -115,7 +116,7 @@ func TestSetProduct(t *testing.T) {
 		t.Logf("Running test case: %s", name)
 
 		testContext := &mockContext{}
-		testProductSlice := []*Product{&testProduct}
+		testProductSlice := []*_data.Product{&testProduct}
 
 		if name == "newProduct" {
 			returnState := make(map[string][]byte)
@@ -124,7 +125,7 @@ func TestSetProduct(t *testing.T) {
 				nil,
 			)
 
-			data := serialize(testProductSlice)
+			data := _data.Serialize(testProductSlice)
 			testContext.On("SetState", map[string][]byte{testGtinAddress: data}).Return(
 				[]string{testGtinAddress},
 				nil,
@@ -133,13 +134,13 @@ func TestSetProduct(t *testing.T) {
 
 		if name == "updateProductState" {
 			returnState := make(map[string][]byte)
-			returnState[testGtinAddress] = serialize(testProductSlice)
+			returnState[testGtinAddress] = _data.Serialize(testProductSlice)
 			testContext.On("GetState", []string{testGtinAddress}).Return(
 				returnState,
 				nil,
 			)
 
-			data := serialize([]*Product{&testSetNewProduct})
+			data := _data.Serialize([]*_data.Product{&testSetNewProduct})
 			testContext.On("SetState", map[string][]byte{testGtinAddress: data}).Return(
 				[]string{testGtinAddress},
 				nil,
@@ -180,12 +181,12 @@ func TestDeleteProduct(t *testing.T) {
 
 		testContext := &mockContext{}
 
-		testProductSlice := make([]*Product, 2)
+		testProductSlice := make([]*_data.Product, 2)
 		testProductSlice[0] = &testProduct
 
-		testProduct2 := Product{
+		testProduct2 := _data.Product{
 			Gtin:       toDeleteGtin,
-			Attributes: Attributes{"uom": "cases"},
+			Attributes: _data.Attributes{"uom": "cases"},
 			State:      "INACTIVE",
 		}
 		testProductSlice[1] = &testProduct2
@@ -205,13 +206,13 @@ func TestDeleteProduct(t *testing.T) {
 
 		if name == "storeProductsWithoutDeleted" {
 			returnState := make(map[string][]byte)
-			returnState[toDeleteGtinAddress] = serialize(testProductSlice)
+			returnState[toDeleteGtinAddress] = _data.Serialize(testProductSlice)
 			testContext.On("GetState", []string{toDeleteGtinAddress}).Return(
 				returnState,
 				nil,
 			)
 
-			data := serialize([]*Product{&testProduct})
+			data := _data.Serialize([]*_data.Product{&testProduct})
 			testContext.On("SetState", map[string][]byte{toDeleteGtinAddress: data}).Return(
 				[]string{toDeleteGtinAddress},
 				nil,

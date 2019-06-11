@@ -18,10 +18,9 @@
 package list
 
 import (
-	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
-	"strings"
+	"github.com/tross-tyson/mdata_go/src/shared/data"
 )
 
 type List struct {
@@ -48,30 +47,22 @@ func (args *List) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *List) Run() error {
+func (args *List) Run() (string, error) {
 
 	//TODO: Check back here after List() has been defined in mdataClient
 	// Construct client
 	mdataClient, err := client.GetClient(args, false)
 	if err != nil {
-		return err
+		return "", err
 	}
 	products, err := mdataClient.List()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	fmt.Printf("%-15v\t%-40v\t%-10v\t\n", "GTIN", "ATTRIBUTES", "STATE")
+	productMap, _ := data.Deserialize([]byte(products))
 
-	for _, product := range products {
-		for _, str := range strings.Split(product, "|") {
-			parts := strings.Split(str, ",")
-			gtin := parts[0]
-			attrs := parts[1 : len(parts)-1]
-			state := parts[len(parts)-1]
+	response := data.GetProductMapJson(productMap)
 
-			fmt.Printf("%-v\t%-40v\t%-v\t\n", gtin, attrs, state)
-		}
-	}
-	return nil
+	return string(response), nil
 }

@@ -22,29 +22,62 @@ import (
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/create"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/delete"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/list"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/set"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/show"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/update"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/constants"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/parser"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/rest_service"
 	"os"
 )
-
-type Opts struct {
-	Verbose []bool `short:"v" long:"verbose" description:"Enable more verbose output"`
-	Version bool   `short:"V" long:"version" description:"Display version information"`
-}
 
 var DISTRIBUTION_VERSION string
 
 var logger *logging.Logger = logging.Get()
+var CmdsSlice []commands.Command = parser.Commands()
 
 func init() {
 	if len(constants.DISTRIBUTION_VERSION) == 0 {
 		DISTRIBUTION_VERSION = "Unknown"
 	}
+}
+
+func runCommandLine(cli_parser *flags.Parser) {
+
+	//_, err := cli_parser.ParseArgs(cli_args)
+
+	fmt.Printf("ALL COMMAND LINE ARGUMENTS: \n\t%v", cli_parser.Command.Active)
+
+	// if err != nil {
+	// 	logger.Errorf("Error parsing commands %v: %v", cli_args, err)
+	// 	os.Exit(1)
+	// }
+
+	// If a sub-command was passed, run it
+	if cli_parser.Command.Active == nil {
+		os.Exit(2)
+	}
+
+	name := cli_parser.Command.Active.Name
+	for _, cmd := range CmdsSlice {
+		if cmd.Name() == name {
+			response, err := cmd.Run()
+			if err != nil {
+				fmt.Println("Error: ", err)
+				os.Exit(1)
+			}
+			fmt.Println(response)
+			return
+		}
+	}
+
+	fmt.Println("Error: Command not found: ", name)
+
+	return
+}
+
+type Opts struct {
+	Verbose []bool `short:"v" long:"verbose" description:"Enable more verbose output"`
+	Version bool   `short:"V" long:"version" description:"Display version information"`
+	Server  bool   `short:"S" long:"server" description:"Run as REST Server instead of command line"`
+	Port    uint   `short:"p" long:"port" description:"Provide the port to run the REST Service. Default -p=8888"`
 }
 
 func main() {
@@ -57,28 +90,23 @@ func main() {
 	}
 
 	var opts Opts
-	parser := flags.NewParser(&opts, flags.Default)
-	parser.Command.Name = "mdata"
+	//cli_parser := flags.NewParser(&opts, flags.Default)
+	//cli_parser.Command.Name = "mdata"
 
-	// Add sub-commands
-	commands := []commands.Command{
-		&create.Create{},
-		&delete.Delete{},
-		&update.Update{},
-		&set.Set{},
-		&show.Show{},
-		&list.List{},
-	}
+	var CliServiceParser *flags.Parser = parser.GetParser(nil)
 
-	for _, cmd := range commands {
-		err := cmd.Register(parser.Command)
+	CliServiceParser.AddGroup("d", "default", &opts)
+
+	for _, cmd := range CmdsSlice {
+		err := cmd.Register(CliServiceParser.Command)
 		if err != nil {
 			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
 			os.Exit(1)
 		}
 	}
 
-	remaining, err := parser.Parse()
+	_, err := CliServiceParser.ParseArgs(arguments)
+
 	if e, ok := err.(*flags.Error); ok {
 		if e.Type == flags.ErrHelp {
 			return
@@ -87,11 +115,7 @@ func main() {
 		}
 	}
 
-	if len(remaining) > 0 {
-		fmt.Println("Error: Unrecognized arguments passed: ", remaining)
-		os.Exit(2)
-	}
-
+	// Set verbosity
 	switch len(opts.Verbose) {
 	case 2:
 		logger.SetLevel(logging.DEBUG)
@@ -101,22 +125,18 @@ func main() {
 		logger.SetLevel(logging.WARN)
 	}
 
-	// If a sub-command was passed, run it
-	if parser.Command.Active == nil {
-		os.Exit(2)
+	if opts.Server {
+		// Instantiate RESTful API
+		rest_service.Run(opts.Port)
+	} else {
+		//Debugging
+		// fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
+		// fmt.Printf("INPUT OS.ARGS: \n\t%v\n", arguments)
+
+		// fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v\n", remaining)
+		// fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v\n", err)
+
+		runCommandLine(CliServiceParser)
 	}
 
-	name := parser.Command.Active.Name
-	for _, cmd := range commands {
-		if cmd.Name() == name {
-			err := cmd.Run()
-			if err != nil {
-				fmt.Println("Error: ", err)
-				os.Exit(1)
-			}
-			return
-		}
-	}
-
-	fmt.Println("Error: Command not found: ", name)
 }

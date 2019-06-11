@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/tross-tyson/mdata_go/src/mdata_processor/mdata_payload"
 	"github.com/tross-tyson/mdata_go/src/mdata_processor/mdata_state"
+	"github.com/tross-tyson/mdata_go/src/shared/data"
 	"strings"
 
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
@@ -99,9 +100,9 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 		if err != nil {
 			return err
 		}
-		product := &mdata_state.Product{
+		product := &data.Product{
 			Gtin:       payload.Gtin,
-			Attributes: mdata_state.DeserializeAttributes(payload.Attributes),
+			Attributes: data.DeserializeAttributes(payload.Attributes),
 			State:      "ACTIVE",
 		}
 		displayCreate(payload, signer)
@@ -119,7 +120,7 @@ func (self *MdHandler) Apply(request *processor_pb2.TpProcessRequest, context *p
 			return err
 		}
 		product, _ := mdState.GetProduct(payload.Gtin) //err is not needed here, as it is checked in the validateUpdate function
-		product.Attributes = mdata_state.DeserializeAttributes(payload.Attributes)
+		product.Attributes = data.DeserializeAttributes(payload.Attributes)
 		product.State = "ACTIVE"
 		displayUpdate(payload, signer, product)
 		return mdState.SetProduct(payload.Gtin, product)
@@ -170,7 +171,7 @@ func validateUpdate(mdState *mdata_state.MdState, gtin string) error {
 	return nil
 }
 
-func displayUpdate(payload *mdata_payload.MdPayload, signer string, product *mdata_state.Product) {
+func displayUpdate(payload *mdata_payload.MdPayload, signer string, product *data.Product) {
 	s := fmt.Sprintf("+ Signer %s updated product %s with attributes %s", signer[:6], product.Gtin, product.Attributes)
 	sLength := len(s)
 	border := "+" + strings.Repeat("-", sLength-2) + "+"
@@ -200,7 +201,7 @@ func validateStateChange(mdState *mdata_state.MdState, gtin string, action strin
 	return nil
 }
 
-func displayStateChange(payload *mdata_payload.MdPayload, signer string, product *mdata_state.Product) {
+func displayStateChange(payload *mdata_payload.MdPayload, signer string, product *data.Product) {
 	s := fmt.Sprintf("+ Signer %s updated product %s state to %s+", signer[:6], product.Gtin, product.State)
 	sLength := len(s)
 	border := "+" + strings.Repeat("-", sLength-2) + "+"

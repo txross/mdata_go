@@ -20,6 +20,7 @@ package delete
 import (
 	"github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/client"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 )
 
 type Delete struct {
@@ -51,15 +52,24 @@ func (args *Delete) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Delete) Run() error {
+func (args *Delete) Run() (string, error) {
 	// Construct client
 	gtin := args.Args.Gtin
 	wait := args.Wait
 
 	mdataClient, err := client.GetClient(args, true)
 	if err != nil {
-		return err
+		return "", err
 	}
-	_, err = mdataClient.Delete(gtin, wait)
-	return err
+
+	batchStatusResponse, batchStatusErr := mdataClient.Delete(gtin, wait)
+
+	if batchStatusErr != nil {
+		return "", batchStatusErr
+	}
+
+	// Query batch transaction status link
+	status := commands.GetTransactionStatus(batchStatusResponse)
+
+	return status, nil
 }

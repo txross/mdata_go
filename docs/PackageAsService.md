@@ -1,3 +1,7 @@
+# Downlaod Binaries from Master build
+ Get the binaries from the releases:
+ https://github.com/tross-tyson/mdata_go/releases
+
 # Commands run to package golang as a service
 
 1. Move environment files to correct location /etc/default<br>
@@ -19,3 +23,6 @@
 
 4. Enable service <br>
     `sudo systemctl enable sawtooth-mdata-tp-go.service`<br>
+
+5. Reload daemon <b>
+    `sudo systemctl-reload`
