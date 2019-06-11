@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"reflect"
+	"sort"
+	"strings"
 	"testing"
 )
 
@@ -15,30 +17,44 @@ var testAttributesOne Attributes = Attributes{"uom": "cases"}
 var testGtin2 string = "55555555555555"
 var testAttributesMulti Attributes = Attributes{"uom": "lbs", "weight": "300"}
 
+func EqualSlices(a []string, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	sort.Strings(a)
+	sort.Strings(b)
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}
 func TestSerializedAttributes(t *testing.T) {
 
 	tests := map[string]struct {
 		attr          Attributes
-		outSerialized []byte
+		outSerialized []string
 	}{
 		"nilAttribute": {
 			attr:          testAttributesEmpty,
-			outSerialized: []byte(nil),
+			outSerialized: []string{""},
 		},
 		"oneAttribute": {
 			attr:          testAttributesOne,
-			outSerialized: []byte("uom=cases"),
+			outSerialized: []string{"uom=cases"},
 		},
 		"multiAttribute": {
 			attr:          testAttributesMulti,
-			outSerialized: []byte("uom=lbs,weight=300"),
+			outSerialized: strings.Split("uom=lbs,weight=300", ","),
 		},
 	}
 
 	for name, test := range tests {
 		t.Logf("Running test case: %s", name)
 		serialized := test.attr.Serialize()
-		assert.Equal(t, test.outSerialized, serialized)
+		serialized_slice_string := strings.Split(string(serialized), ",")
+		assert.Equal(t, test.outSerialized, serialized_slice_string)
 	}
 }
 
