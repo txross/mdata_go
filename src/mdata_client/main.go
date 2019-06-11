@@ -93,11 +93,11 @@ func main() {
 	//cli_parser := flags.NewParser(&opts, flags.Default)
 	//cli_parser.Command.Name = "mdata"
 
-	var CliServiceParser *flags.Parser = parser.GetParser(CmdsSlice)
+	var CliServiceParser *flags.Parser = parser.GetParser(nil)
 
 	CliServiceParser.AddGroup("d", "default", &opts)
 
-	remaining, err := CliServiceParser.ParseArgs(os.Args[1:])
+	remaining, err := CliServiceParser.ParseArgs(arguments)
 
 	fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
 
@@ -111,7 +111,7 @@ func main() {
 		logger.SetLevel(logging.WARN)
 	}
 
-	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", os.Args[1:])
+	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", arguments)
 
 	//remaining, err := cli_parser.Parse()
 
