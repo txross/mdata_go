@@ -61,7 +61,7 @@ func listProduct(c echo.Context) error {
 	response, err := ParseRequestArgs(args)
 
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%v", err))
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -84,7 +84,7 @@ func showProduct(c echo.Context) error {
 	response, err := ParseRequestArgs(args)
 
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%v", err))
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -114,7 +114,7 @@ func createProduct(c echo.Context) error {
 	status, cmd_err := ParseRequestArgs(args)
 
 	if cmd_err != nil {
-		return cmd_err
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%v", cmd_err))
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
@@ -138,7 +138,7 @@ func deleteProduct(c echo.Context) error {
 	status, err := ParseRequestArgs(args)
 
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%v", err))
 	}
 
 	return c.JSON(http.StatusOK, fmt.Sprintf(`{"Status": %v}`, status))
@@ -188,7 +188,7 @@ func updateProductAttributes(c echo.Context) error {
 	status, cmd_err := ParseRequestArgs(args)
 
 	if cmd_err != nil {
-		return cmd_err
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%v", cmd_err))
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
@@ -217,7 +217,7 @@ func updateProductState(c echo.Context) error {
 	status, cmd_err := ParseRequestArgs(args)
 
 	if cmd_err != nil {
-		return cmd_err
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%v", cmd_err))
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
@@ -234,8 +234,8 @@ func Run(port uint) {
 	e.GET("/products/:gtin", showProduct) // show specific product
 
 	e.POST("/products", createProduct)                     // create new product
-	e.PUT("/products/:gtin/attr", updateProductAttributes) // update existing product attributes or state
-	e.PUT("/products/:gtin/state", updateProductState)     // update existing product attributes or state
+	e.PUT("/products/attr/:gtin", updateProductAttributes) // update existing product attributes or state
+	e.PUT("/products/state/:gtin", updateProductState)     // update existing product attributes or state
 	e.DELETE("/products/:gtin", deleteProduct)             // delete existing inactive product
 
 	if port != 0 {
