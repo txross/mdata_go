@@ -68,7 +68,7 @@ func runCommandLine(parser *flags.Parser) {
 	}
 
 	name := parser.Command.Active.Name
-	for _, cmd := range commands {
+	for _, cmd := range Commands {
 		if cmd.Name() == name {
 			response, err := cmd.Run()
 			if err != nil {
