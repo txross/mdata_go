@@ -63,7 +63,10 @@ func showProduct(c echo.Context) error {
 
 	fmt.Printf("GOT ARGS: %v\n", args)
 
-	_, err := RestServiceParser.ParseArgs(args)
+	remaining, err := RestServiceParser.ParseArgs(args)
+
+	fmt.Printf("HAVE REMAINING ARGUMENTS: %v", remaining)
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
 	}
