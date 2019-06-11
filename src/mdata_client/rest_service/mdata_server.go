@@ -9,13 +9,13 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/parser"
 	"github.com/tross-tyson/mdata_go/src/shared/data"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
 )
 
 var logger *logging.Logger = logging.Get()
-var CmdsSlice []commands.Command := parser.Commands()
+var CmdsSlice []commands.Command = parser.Commands()
 
 type CrudResponse struct {
 	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
