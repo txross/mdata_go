@@ -5,12 +5,16 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/parser"
 	"github.com/tross-tyson/mdata_go/src/shared/data"
+	"os"
 )
+
+var logger *logging.Logger = logging.Get()
 
 type CrudResponse struct {
 	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
@@ -19,22 +23,15 @@ type CrudResponse struct {
 
 func ParseRequestArgs(args []string) (string, error) {
 
-	Commands := []commands.Command{
-		&create.Create{},
-		&delete.Delete{},
-		&update.Update{},
-		&set.Set{},
-		&show.Show{},
-		&list.List{},
-	}
+	Commands := parser.Commands()
 
 	var RestServiceParser *flags.Parser = parser.GetParser(Commands)
 
 	for _, cmd := range Commands {
-		err := cmd.Register(parser.Command)
+		err := cmd.Register(RestServiceParser.Command)
 		if err != nil {
 			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
-			os.Exit(1)
+			return "", err
 		}
 	}
 
@@ -43,12 +40,15 @@ func ParseRequestArgs(args []string) (string, error) {
 		return "", echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
 	}
 
+	cmd_name := name := RestServiceParser.Command.Active.Name
+
 	for _, cmd := range Commands {
 		if cmd.Name() == cmd_name {
 			response, err := cmd.Run()
 			return response, err
 		}
 	}
+
 	return "", fmt.Errorf("Command active name not found %v", cmd_name)
 }
 
@@ -112,10 +112,10 @@ func createProduct(c echo.Context) error {
 		args = append(args, "-a", key_value_pair)
 	}
 
-	response, err := ParseRequestArgs(args)
+	status, cmd_err := ParseRequestArgs(args)
 
-	if err != nil {
-		return err
+	if cmd_err != nil {
+		return cmd_err
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
@@ -136,7 +136,7 @@ func deleteProduct(c echo.Context) error {
 		gtin,
 	}
 
-	response, err := ParseRequestArgs(args)
+	status, err := ParseRequestArgs(args)
 
 	if err != nil {
 		return err
@@ -186,10 +186,10 @@ func updateProductAttributes(c echo.Context) error {
 		args = append(args, "-a", key_value_pair)
 	}
 
-	response, err := ParseRequestArgs(args)
+	status, cmd_err := ParseRequestArgs(args)
 
-	if err != nil {
-		return err
+	if cmd_err != nil {
+		return cmd_err
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
@@ -215,10 +215,10 @@ func updateProductState(c echo.Context) error {
 		product.State,
 	}
 
-	response, err := ParseRequestArgs(args)
+	status, cmd_err := ParseRequestArgs(args)
 
-	if err != nil {
-		return err
+	if cmd_err != nil {
+		return cmd_err
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
