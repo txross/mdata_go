@@ -19,14 +19,14 @@ type CrudResponse struct {
 	Product data.Product `json:"Product" sml:"Product" form:"Product" query:"Product"`
 }
 
-func runCmd(cmd_name string) ([]byte, error) {
+func runCmd(cmd_name string) (string, error) {
 	for _, cmd := range parser.Commands() {
 		if cmd.Name() == cmd_name {
 			response, err := cmd.Run()
 			return response, err
 		}
 	}
-	return nil, nil
+	return "", nil
 }
 
 func showProduct(c echo.Context) error {
