@@ -97,7 +97,7 @@ func main() {
 
 	CliServiceParser.AddGroup("d", "default", &opts)
 
-	or _, cmd := range CmdsSlice {
+	for _, cmd := range CmdsSlice {
 		err := cmd.Register(CliServiceParser.Command)
 		if err != nil {
 			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
@@ -124,8 +124,6 @@ func main() {
 	default:
 		logger.SetLevel(logging.WARN)
 	}
-
-	
 
 	if e, ok := err.(*flags.Error); ok {
 		if e.Type == flags.ErrHelp {
