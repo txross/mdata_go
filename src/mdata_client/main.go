@@ -22,13 +22,8 @@ import (
 	"github.com/hyperledger/sawtooth-sdk-go/logging"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/commands"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/create"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/delete"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/list"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/set"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/show"
-	"github.com/tross-tyson/mdata_go/src/mdata_client/commands/update"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/constants"
+	"github.com/tross-tyson/mdata_go/src/mdata_client/parser"
 	"github.com/tross-tyson/mdata_go/src/mdata_client/rest_service"
 	"os"
 )
@@ -36,6 +31,7 @@ import (
 var DISTRIBUTION_VERSION string
 
 var logger *logging.Logger = logging.Get()
+var CmdsSlice []commands.Command = parser.Commands()
 
 func init() {
 	if len(constants.DISTRIBUTION_VERSION) == 0 {
@@ -43,42 +39,34 @@ func init() {
 	}
 }
 
-func runCommandLine(parser *flags.Parser, remaining []string) {
+func runCommandLine(cli_args []string) {
 
-	Commands := []commands.Command{
-		&create.Create{},
-		&delete.Delete{},
-		&update.Update{},
-		&set.Set{},
-		&show.Show{},
-		&list.List{},
-	}
+	var CliServiceParser *flags.Parser = parser.GetParser(CmdsSlice)
 
-	for _, cmd := range Commands {
-		err := cmd.Register(parser.Command)
+	for _, cmd := range CmdsSlice {
+		err := cmd.Register(CliServiceParser.Command)
 		if err != nil {
 			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
 			os.Exit(1)
 		}
 	}
 
-	_, err := parser.ParseArgs(remaining)
+	_, err := CliServiceParser.ParseArgs(cli_args)
 
-	fmt.Printf("ALL COMMAND LINE ARGUMENTS: \n\t%v", parser.Command.Active)
+	fmt.Printf("ALL COMMAND LINE ARGUMENTS: \n\t%v", CliServiceParser.Command.Active)
 
 	if err != nil {
-		logger.Errorf("Error parsing commands %v: %v", remaining, err)
+		logger.Errorf("Error parsing commands %v: %v", cli_args, err)
 		os.Exit(1)
 	}
 
 	// If a sub-command was passed, run it
-	if parser.Command.Active == nil {
+	if CliServiceParser.Command.Active == nil {
 		os.Exit(2)
 	}
 
-	name := parser.Command.Active.Name
-	for _, cmd := range Commands {
-		if cmd.Name() == name {
+	for _, cmd := range CmdsSlice {
+		if cmd.Name() == CliServiceParser.Command.Active.Name {
 			response, err := cmd.Run()
 			if err != nil {
 				fmt.Println("Error: ", err)
@@ -111,8 +99,10 @@ func main() {
 	}
 
 	var opts Opts
-	cli_parser := flags.NewParser(&opts, flags.Default)
-	cli_parser.Command.Name = "mdata"
+	//cli_parser := flags.NewParser(&opts, flags.Default)
+	//cli_parser.Command.Name = "mdata"
+
+	remaining, err := flags.ParseArgs(&opts, os.Args)
 
 	fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
 
@@ -128,7 +118,7 @@ func main() {
 
 	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", os.Args)
 
-	remaining, err := cli_parser.Parse()
+	//remaining, err := cli_parser.Parse()
 
 	fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v\n", remaining)
 	fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v\n", err)
@@ -145,7 +135,7 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port)
 	} else {
-		runCommandLine(cli_parser, remaining)
+		runCommandLine(remaining)
 	}
 
 }
