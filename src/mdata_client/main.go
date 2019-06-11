@@ -121,12 +121,12 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port)
 	} else {
+		//Debugging
+		// fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
+		// fmt.Printf("INPUT OS.ARGS: \n\t%v\n", arguments)
 
-		fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
-		fmt.Printf("INPUT OS.ARGS: \n\t%v\n", arguments)
-
-		fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v\n", remaining)
-		fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v\n", err)
+		// fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v\n", remaining)
+		// fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v\n", err)
 
 		if e, ok := err.(*flags.Error); ok {
 			if e.Type == flags.ErrHelp {
