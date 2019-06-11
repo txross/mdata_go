@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"errors"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -27,7 +26,7 @@ func runCmd(cmd_name string) (string, error) {
 			return response, err
 		}
 	}
-	return "", errors.New("Command active name not found %v", cmd_name)
+	return "", fmt.Errorf("Command active name not found %v", cmd_name)
 }
 
 func listProduct(c echo.Context) error {
