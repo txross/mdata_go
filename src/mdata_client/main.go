@@ -105,7 +105,7 @@ func main() {
 
 	CliServiceParser.AddGroup("d", "default", &opts)
 
-	remaining, err := CliServiceParser.ParseArgs(os.Args)
+	remaining, err := CliServiceParser.ParseArgs(os.Args[1:])
 
 	fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
 
