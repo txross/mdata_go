@@ -12,15 +12,38 @@ import (
 	"github.com/tross-tyson/mdata_go/src/shared/data"
 )
 
-var RestServiceParser *flags.Parser = parser.GetParser(parser.Commands())
-
 type CrudResponse struct {
 	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
 	Product data.Product `json:"Product" sml:"Product" form:"Product" query:"Product"`
 }
 
-func runCmd(cmd_name string) (string, error) {
-	for _, cmd := range parser.Commands() {
+func ParseRequestArgs(args []string) (string, error) {
+
+	Commands := []commands.Command{
+		&create.Create{},
+		&delete.Delete{},
+		&update.Update{},
+		&set.Set{},
+		&show.Show{},
+		&list.List{},
+	}
+
+	var RestServiceParser *flags.Parser = parser.GetParser(Commands)
+
+	for _, cmd := range Commands {
+		err := cmd.Register(parser.Command)
+		if err != nil {
+			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
+			os.Exit(1)
+		}
+	}
+
+	_, err := RestServiceParser.ParseArgs(args)
+	if err != nil {
+		return "", echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
+	}
+
+	for _, cmd := range Commands {
 		if cmd.Name() == cmd_name {
 			response, err := cmd.Run()
 			return response, err
@@ -36,14 +59,10 @@ func listProduct(c echo.Context) error {
 		"list",
 	}
 
-	_, err := RestServiceParser.ParseArgs(args)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
-	}
+	response, err := ParseRequestArgs(args)
 
-	response, cmd_err := runCmd(RestServiceParser.Command.Active.Name)
-	if cmd_err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error executing command %v, %v", RestServiceParser.Command.Active.Name, cmd_err)
+	if err != nil {
+		return err
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -51,7 +70,7 @@ func listProduct(c echo.Context) error {
 
 func showProduct(c echo.Context) error {
 	//1. Get product id from REST param
-	gtin := strings.Trim(c.Param("gtin"), "\r\n")
+	gtin := c.Param("gtin")
 
 	fmt.Printf("GOT PARAM: %v\n", gtin)
 
@@ -63,24 +82,10 @@ func showProduct(c echo.Context) error {
 
 	fmt.Printf("GOT ARGS: %v\n", args)
 
-	remaining, err := RestServiceParser.ParseArgs(args)
-
-	fmt.Printf("HAVE REMAINING ARGUMENTS: %v\n", remaining)
+	response, err := ParseRequestArgs(args)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
-	}
-
-	fmt.Printf("GOT COMMAND ACTIVE NAME: %v\n", RestServiceParser.Command.Active.Name)
-
-	response, cmd_err := runCmd(RestServiceParser.Command.Active.Name)
-
-	fmt.Printf("GOT COMMAND RESPONSE: %v\n", response)
-
-	fmt.Printf("GOT COMMAND ERROR: %v\n", cmd_err)
-
-	if cmd_err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error executing command %v, %v", RestServiceParser.Command.Active.Name, cmd_err)
+		return err
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -107,14 +112,10 @@ func createProduct(c echo.Context) error {
 		args = append(args, "-a", key_value_pair)
 	}
 
-	_, err := RestServiceParser.ParseArgs(args)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
-	}
+	response, err := ParseRequestArgs(args)
 
-	status, cmd_err := runCmd(RestServiceParser.Command.Active.Name)
-	if cmd_err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error executing command %v, %v", RestServiceParser.Command.Active.Name, cmd_err)
+	if err != nil {
+		return err
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
@@ -135,15 +136,10 @@ func deleteProduct(c echo.Context) error {
 		gtin,
 	}
 
-	_, err := RestServiceParser.ParseArgs(args)
+	response, err := ParseRequestArgs(args)
+
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
-	}
-
-	status, cmd_err := runCmd(RestServiceParser.Command.Active.Name)
-
-	if cmd_err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error executing command %v, %v", RestServiceParser.Command.Active.Name, cmd_err)
+		return err
 	}
 
 	return c.JSON(http.StatusOK, fmt.Sprintf(`{"Status": %v}`, status))
@@ -190,14 +186,10 @@ func updateProductAttributes(c echo.Context) error {
 		args = append(args, "-a", key_value_pair)
 	}
 
-	_, err := RestServiceParser.ParseArgs(args)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
-	}
+	response, err := ParseRequestArgs(args)
 
-	status, cmd_err := runCmd(RestServiceParser.Command.Active.Name)
-	if cmd_err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error executing command %v, %v", RestServiceParser.Command.Active.Name, cmd_err)
+	if err != nil {
+		return err
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
@@ -223,14 +215,10 @@ func updateProductState(c echo.Context) error {
 		product.State,
 	}
 
-	_, err := RestServiceParser.ParseArgs(args)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
-	}
+	response, err := ParseRequestArgs(args)
 
-	status, cmd_err := runCmd(RestServiceParser.Command.Active.Name)
-	if cmd_err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Error executing command %v, %v", RestServiceParser.Command.Active.Name, cmd_err)
+	if err != nil {
+		return err
 	}
 
 	response := &CrudResponse{Status: status, Product: *product}
