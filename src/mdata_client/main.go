@@ -131,7 +131,7 @@ func main() {
 
 	if opts.Server {
 		// Instantiate RESTful API
-		rest_service.Run(opts.Port, parser)
+		rest_service.Run(opts.Port)
 	} else {
 		runCommandLine(parser)
 	}
