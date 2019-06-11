@@ -137,7 +137,7 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port)
 	} else {
-		runCommandLine(CliServiceParser, remaining)
+		runCommandLine(CliServiceParser)
 	}
 
 }
