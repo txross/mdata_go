@@ -40,7 +40,7 @@ func ParseRequestArgs(args []string) (string, error) {
 		return "", echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
 	}
 
-	cmd_name := name := RestServiceParser.Command.Active.Name
+	cmd_name := RestServiceParser.Command.Active.Name
 
 	for _, cmd := range Commands {
 		if cmd.Name() == cmd_name {
