@@ -53,16 +53,22 @@ func showProduct(c echo.Context) error {
 	//1. Get product id from REST param
 	gtin := c.Param("gtin")
 
+	fmt.Printf("GOT PARAM: %v\n", gtin)
+
 	//2 Supply arguments to parser
 	args := []string{
 		"show",
 		gtin,
 	}
 
+	fmt.Printf("GOT ARGS: %v\n", args)
+
 	_, err := RestServiceParser.ParseArgs(args)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
 	}
+
+	fmt.Printf("GOT COMMAND ACTIVE NAME: %v\n", RestServiceParser.Command.Active.Name)
 
 	response, cmd_err := runCmd(RestServiceParser.Command.Active.Name)
 	if cmd_err != nil {
