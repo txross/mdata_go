@@ -15,7 +15,7 @@ import (
 var RestServiceParser *flags.Parser = parser.GetParser(parser.Commands())
 
 type CrudResponse struct {
-	Status  []byte       `json:"Status" sml:"Status" form:"Status" query:"Status"`
+	Status  string       `json:"Status" sml:"Status" form:"Status" query:"Status"`
 	Product data.Product `json:"Product" sml:"Product" form:"Product" query:"Product"`
 }
 
