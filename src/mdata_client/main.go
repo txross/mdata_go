@@ -95,14 +95,6 @@ func main() {
 
 	var CliServiceParser *flags.Parser = parser.GetParser(CmdsSlice)
 
-	for _, cmd := range CmdsSlice {
-		err := cmd.Register(CliServiceParser.Command)
-		if err != nil {
-			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
-			os.Exit(1)
-		}
-	}
-
 	CliServiceParser.AddGroup("d", "default", &opts)
 
 	remaining, err := CliServiceParser.ParseArgs(os.Args[1:])
@@ -119,7 +111,7 @@ func main() {
 		logger.SetLevel(logging.WARN)
 	}
 
-	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", os.Args)
+	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", os.Args[1:])
 
 	//remaining, err := cli_parser.Parse()
 
@@ -138,6 +130,13 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port)
 	} else {
+		for _, cmd := range CmdsSlice {
+			err := cmd.Register(CliServiceParser.Command)
+			if err != nil {
+				logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
+				os.Exit(1)
+			}
+		}
 		runCommandLine(CliServiceParser, remaining)
 	}
 
