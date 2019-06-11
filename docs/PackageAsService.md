@@ -19,3 +19,6 @@
 
 4. Enable service <br>
     `sudo systemctl enable sawtooth-mdata-tp-go.service`<br>
+
+5. Reload daemon <b>
+    `sudo systemctl-reload`
