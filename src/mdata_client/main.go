@@ -114,6 +114,8 @@ func main() {
 	cli_parser := flags.NewParser(&opts, flags.Default)
 	cli_parser.Command.Name = "mdata"
 
+	fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
+
 	// Set verbosity
 	switch len(opts.Verbose) {
 	case 2:
