@@ -107,6 +107,11 @@ func main() {
 
 	remaining, err := CliServiceParser.ParseArgs(arguments)
 
+	if opts.Server {
+		// Instantiate RESTful API
+		return rest_service.Run(opts.Port)
+	}
+
 	fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
 	fmt.Printf("INPUT OS.ARGS: \n\t%v\n", arguments)
 
@@ -133,11 +138,6 @@ func main() {
 		}
 	}
 
-	if opts.Server {
-		// Instantiate RESTful API
-		rest_service.Run(opts.Port)
-	} else {
-		runCommandLine(CliServiceParser)
-	}
+	return runCommandLine(CliServiceParser)
 
 }
