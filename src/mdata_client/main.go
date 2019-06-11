@@ -43,7 +43,24 @@ func init() {
 	}
 }
 
-func runCommandLine(parser *flags.Parser, commands []commands.Command) {
+func runCommandLine(parser *flags.Parser) {
+
+	Commands := []commands.Command{
+		&create.Create{},
+		&delete.Delete{},
+		&update.Update{},
+		&set.Set{},
+		&show.Show{},
+		&list.List{},
+	}
+
+	for _, cmd := range Commands {
+		err := cmd.Register(parser.Command)
+		if err != nil {
+			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
+			os.Exit(1)
+		}
+	}
 
 	// If a sub-command was passed, run it
 	if parser.Command.Active == nil {
@@ -88,23 +105,6 @@ func main() {
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.Command.Name = "mdata"
 
-	Commands := []commands.Command{
-		&create.Create{},
-		&delete.Delete{},
-		&update.Update{},
-		&set.Set{},
-		&show.Show{},
-		&list.List{},
-	}
-
-	for _, cmd := range Commands {
-		err := cmd.Register(parser.Command)
-		if err != nil {
-			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
-			os.Exit(1)
-		}
-	}
-
 	// Set verbosity
 	switch len(opts.Verbose) {
 	case 2:
@@ -133,7 +133,7 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port, parser)
 	} else {
-		runCommandLine(parser, Commands)
+		runCommandLine(parser)
 	}
 
 }
