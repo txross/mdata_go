@@ -51,7 +51,7 @@ func listProduct(c echo.Context) error {
 
 func showProduct(c echo.Context) error {
 	//1. Get product id from REST param
-	gtin := c.Param("gtin")
+	gtin := strings.Trim(c.Param("gtin"), "\r\n")
 
 	fmt.Printf("GOT PARAM: %v\n", gtin)
 
@@ -65,7 +65,7 @@ func showProduct(c echo.Context) error {
 
 	remaining, err := RestServiceParser.ParseArgs(args)
 
-	fmt.Printf("HAVE REMAINING ARGUMENTS: %v", remaining)
+	fmt.Printf("HAVE REMAINING ARGUMENTS: %v\n", remaining)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error parsing arguments %v, %v", args, err)
