@@ -105,7 +105,15 @@ func main() {
 		}
 	}
 
-	remaining, err := CliServiceParser.ParseArgs(arguments)
+	_, err := CliServiceParser.ParseArgs(arguments)
+
+	if e, ok := err.(*flags.Error); ok {
+		if e.Type == flags.ErrHelp {
+			return
+		} else {
+			os.Exit(1)
+		}
+	}
 
 	// Set verbosity
 	switch len(opts.Verbose) {
@@ -127,14 +135,6 @@ func main() {
 
 		// fmt.Printf("ALL REMAINING COMMAND LINE ARGUMENTS: \n\t%v\n", remaining)
 		// fmt.Printf("ERR FROM PARSING OS.ARGS: \n\t%v\n", err)
-
-		if e, ok := err.(*flags.Error); ok {
-			if e.Type == flags.ErrHelp {
-				return
-			} else {
-				os.Exit(1)
-			}
-		}
 
 		runCommandLine(CliServiceParser)
 	}
