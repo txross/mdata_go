@@ -64,6 +64,11 @@ func runCommandLine(parser *flags.Parser, remaining []string) {
 
 	_, err := parser.ParseArgs(remaining)
 
+	if err != nil {
+		logger.Errorf("Error parsing commands %v: %v", remaining, err)
+		os.Exit(1)
+	}
+
 	// If a sub-command was passed, run it
 	if parser.Command.Active == nil {
 		os.Exit(2)
