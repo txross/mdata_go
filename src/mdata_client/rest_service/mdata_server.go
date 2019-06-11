@@ -71,6 +71,11 @@ func showProduct(c echo.Context) error {
 	fmt.Printf("GOT COMMAND ACTIVE NAME: %v\n", RestServiceParser.Command.Active.Name)
 
 	response, cmd_err := runCmd(RestServiceParser.Command.Active.Name)
+
+	fmt.Printf("GOT COMMAND RESPONSE: %v\n", response)
+
+	fmt.Printf("GOT COMMAND ERROR: %v\n", cmd_err)
+
 	if cmd_err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error executing command %v, %v", RestServiceParser.Command.Active.Name, cmd_err)
 	}
