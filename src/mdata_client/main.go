@@ -39,21 +39,11 @@ func init() {
 	}
 }
 
-func runCommandLine(cli_args []string) {
+func runCommandLine(cli_parser *flags.Parser, cli_args []string) {
 
-	var CliServiceParser *flags.Parser = parser.GetParser(CmdsSlice)
+	_, err := cli_parser.ParseArgs(cli_args)
 
-	for _, cmd := range CmdsSlice {
-		err := cmd.Register(CliServiceParser.Command)
-		if err != nil {
-			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
-			os.Exit(1)
-		}
-	}
-
-	_, err := CliServiceParser.ParseArgs(cli_args)
-
-	fmt.Printf("ALL COMMAND LINE ARGUMENTS: \n\t%v", CliServiceParser.Command.Active)
+	fmt.Printf("ALL COMMAND LINE ARGUMENTS: \n\t%v", cli_parser.Command.Active)
 
 	if err != nil {
 		logger.Errorf("Error parsing commands %v: %v", cli_args, err)
@@ -61,11 +51,11 @@ func runCommandLine(cli_args []string) {
 	}
 
 	// If a sub-command was passed, run it
-	if CliServiceParser.Command.Active == nil {
+	if cli_parser.Command.Active == nil {
 		os.Exit(2)
 	}
 
-	name := CliServiceParser.Command.Active.Name
+	name := cli_parser.Command.Active.Name
 	for _, cmd := range CmdsSlice {
 		if cmd.Name() == name {
 			response, err := cmd.Run()
@@ -103,7 +93,17 @@ func main() {
 	//cli_parser := flags.NewParser(&opts, flags.Default)
 	//cli_parser.Command.Name = "mdata"
 
-	remaining, err := flags.ParseArgs(&opts, os.Args)
+	var CliServiceParser *flags.Parser = parser.GetParser(CmdsSlice)
+
+	for _, cmd := range CmdsSlice {
+		err := cmd.Register(CliServiceParser.Command)
+		if err != nil {
+			logger.Errorf("Couldn't register command %v: %v", cmd.Name(), err)
+			os.Exit(1)
+		}
+	}
+
+	remaining, err := CliServiceParser.ParseArgs(&opts, os.Args)
 
 	fmt.Printf("Opts PARSED FROM OS.ARGS: \n\t%v\n", opts)
 
@@ -136,7 +136,7 @@ func main() {
 		// Instantiate RESTful API
 		rest_service.Run(opts.Port)
 	} else {
-		runCommandLine(remaining)
+		runCommandLine(CliServiceParser, remaining)
 	}
 
 }
