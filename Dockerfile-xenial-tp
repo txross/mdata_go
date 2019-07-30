@@ -42,7 +42,7 @@ RUN echo "deb [arch=amd64] http://repo.sawtooth.me/ubuntu/ci xenial universe" >>
 
 ENV GOROOT=/usr/local/go
 
-ENV GOPATH=/go:/go/src/github.com/hyperledger/sawtooth-sdk-go:/go/src/mdata_go/src/mdata_client:/go/src/mdata_go/src/mdata_processor
+ENV GOPATH=/go:/go/src/github.com/hyperledger/sawtooth-sdk-go:/go/src/github.com/tross-tyson/mdata_go/src/mdata_client:/go/src/github.com/tross-tyson/mdata_go/src/mdata_processor
 
 ENV PATH=$PATH:/project/bin:/go/bin:$GOROOT/bin
 
@@ -62,24 +62,26 @@ RUN go get -u \
     github.com/hyperledger/sawtooth-sdk-go \
     golang.org/x/crypto/ssh \
     gopkg.in/yaml.v2 \
+    github.com/labstack/echo \
     github.com/stretchr/testify/mock \
+    github.com/dgrijalva/jwt-go \
 && cd /go/src/github.com/hyperledger/sawtooth-sdk-go \
 && go generate 
 
-WORKDIR /go/src/mdata_go
+WORKDIR /go/src/github.com/tross-tyson/mdata_go/
 
 COPY . .
 
-RUN cd /go/src/mdata_go \
+RUN cd /go/src/github.com/tross-tyson/mdata_go \
  && if [ -d "bin" ]; then rm -rf bin; fi \
  && mkdir bin \
  && echo "+================== BUILDING TRANSACTION PROCESSOR =============================+" \
- && cd /go/src/mdata_go/src/mdata_processor \ 
- && go build -o /go/src/mdata_go/bin/mdata-tp-go \
+ && cd /go/src/github.com/tross-tyson/mdata_go/src/mdata_processor \ 
+ && go build -o /go/src/github.com/tross-tyson/mdata_go/bin/mdata-tp-go \
  && echo "+================== BUILDING CLI CLIENT =============================+" \
- && cd /go/src/mdata_go/src/mdata_client \
+ && cd /go/src/github.com/tross-tyson/mdata_go/src/mdata_client \
  && ST_VERSION="0.1.2.dev771" \
- && go build -ldflags "-X main.DISTRIBUTION_VERSION=${ST_VERSION}" -o /go/src/mdata_go/bin/mdata-go
+ && go build -ldflags "-X main.DISTRIBUTION_VERSION=${ST_VERSION}" -o /go/src/github.com/tross-tyson/mdata_go/bin/mdata-go
 
  #&& ST_VERSION=$(/go/src/github.com/hyperledger/sawtooth-sdk-go/bin/get_version) \
 
@@ -88,11 +90,11 @@ RUN pkg=mdata_go \
  && GO_TP_DASH=$(echo $pkg | sed s/_/-/) \
  && CHANGELOG_DIR="debian/usr/share/doc/sawtooth-tp-$GO_TP_DASH" \
  && ST_VERSION="0.1.2.dev771" \
- && cd /go/src/mdata_go \
+ && cd /go/src/github.com/tross-tyson/mdata_go \
  && if [ -d "debian" ]; then rm -rf debian; fi \
  && mkdir -p debian/DEBIAN \
  && mkdir -p $CHANGELOG_DIR \
- && cp /go/src/mdata_go/packaging/ubuntu/* debian \
+ && cp /go/src/github.com/tross-tyson/mdata_go/packaging/ubuntu/* debian \
  && sed -i -e"s/@VERSION@/$ST_VERSION/" debian/control \
  && sed -i -e"s/@VERSION@/$ST_VERSION/" debian/changelog \
  && cp debian/changelog $CHANGELOG_DIR \
@@ -117,7 +119,7 @@ RUN pkg=mdata_go \
 
 FROM ubuntu:xenial
 
-COPY --from=mdata-tp-go-builder /go/src/mdata_go/sawtooth-mdata-tp-go_*.deb /tmp
+COPY --from=mdata-tp-go-builder /go/src/github.com/tross-tyson/mdata_go/sawtooth-mdata-tp-go_*.deb /tmp
 
 RUN apt-get update \
  && dpkg -i /tmp/sawtooth-*.deb || true \
