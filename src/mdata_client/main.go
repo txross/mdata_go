@@ -63,7 +63,7 @@ func runCommandLine(cli_parser *flags.Parser) {
 				fmt.Println("Error: ", err)
 				os.Exit(1)
 			}
-			fmt.Println(response)
+			fmt.Println(string(response))
 			return
 		}
 	}

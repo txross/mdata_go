@@ -47,7 +47,7 @@ func (args *List) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *List) Run() (string, error) {
+func (args *List) Run() ([]byte, error) {
 
 	//TODO: Check back here after List() has been defined in mdataClient
 	// Construct client
@@ -64,5 +64,5 @@ func (args *List) Run() (string, error) {
 
 	response := data.GetProductMapJson(productMap)
 
-	return string(response), nil
+	return response, nil
 }

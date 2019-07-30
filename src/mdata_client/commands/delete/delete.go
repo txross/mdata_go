@@ -52,7 +52,7 @@ func (args *Delete) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Delete) Run() (string, error) {
+func (args *Delete) Run() ([]byte, error) {
 	// Construct client
 	gtin := args.Args.Gtin
 	wait := args.Wait
@@ -71,5 +71,5 @@ func (args *Delete) Run() (string, error) {
 	// Query batch transaction status link
 	status := commands.GetTransactionStatus(batchStatusResponse)
 
-	return status, nil
+	return []byte{status}, nil
 }

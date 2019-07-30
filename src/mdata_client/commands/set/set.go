@@ -53,7 +53,7 @@ func (args *Set) Register(parent *flags.Command) error {
 	return nil
 }
 
-func (args *Set) Run() (string, error) {
+func (args *Set) Run() ([]byte, error) {
 	// Construct client
 	gtin := args.Args.Gtin
 	state := args.Args.State
@@ -72,5 +72,5 @@ func (args *Set) Run() (string, error) {
 	// Query batch transaction status link
 	status := commands.GetTransactionStatus(batchStatusResponse)
 
-	return status, nil
+	return []byte{status}, nil
 }

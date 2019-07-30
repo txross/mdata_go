@@ -22,6 +22,10 @@ type CrudResponse struct {
 	Product data.Product `json:"Product" sml:"Product" form:"Product" query:"Product"`
 }
 
+type StatusResponse struct {
+	Status string `json:"Status" sml:"Status" form:"Status" query:"Status"`
+}
+
 func ParseRequestArgs(args []string) (string, error) {
 
 	var RestServiceParser *flags.Parser = parser.GetParser(CmdsSlice)
@@ -141,7 +145,9 @@ func deleteProduct(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%v", err))
 	}
 
-	return c.JSON(http.StatusOK, fmt.Sprintf(`{"Status": %v}`, status))
+	response := &StatusResponse{Status: status}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func updateProductAttributes(c echo.Context) error {
